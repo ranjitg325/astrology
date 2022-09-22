@@ -1,0 +1,36 @@
+{
+  "name": "astrology",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aggregate": "^0.1.0",
+    "aws-sdk": "^2.895.0",
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.20.0",
+    "cookie-parser": "^1.4.6",
+    "database.js": "^0.0.1",
+    "dotenv": "^16.0.2",
+    "ejs": "^3.1.8",
+    "express": "^4.18.1",
+    "generate-password": "^1.7.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^6.5.5",
+    "multer": "^1.4.2",
+    "multer-s3": "^2.9.0",
+    "nodemailer": "^6.7.8",
+    "nodemon": "^2.0.19",
+    "otp-generator": "^4.0.0",
+    "peer": "^0.6.1",
+    "socket.io": "^4.5.2",
+    "util": "^0.12.4",
+    "uuid": "^9.0.0",
+    "validator": "^13.7.0"
+  }
+}
