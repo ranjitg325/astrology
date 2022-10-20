@@ -37,7 +37,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         //match: [/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,15}$/, 'Min length should be 8 and max length should be 15']
+    
     },
+
+    
     address: {
         street: { type: String ,trim: true},
         city: { type: String, trim: true },

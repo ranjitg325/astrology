@@ -45,6 +45,7 @@ exports.getAllPalmReaders = async (req, res) => {
         //const subAdmin = req.body.subAdmin;
         const palmReaderCount = await palmReaderModel.find({/*subAdmin:subAdmin,*/ isDeleted: false }).count();
         const palmReaderData = await palmReaderModel.find({/* subAdmin : subAdmin,*/isDeleted: false });
+//const palmReader= await palmReaderModel.find({userid:userid,isDeleted:false})
         return res.status(200).send({ msg: "palmReaders fetched successfully", count: palmReaderCount, data: palmReaderData });
     } catch (err) {
         return res.status(500).send(err.message);
