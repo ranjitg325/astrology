@@ -1,14 +1,45 @@
 const adminModel = require("../models/adminModel");
+const emailValidator = require('validator')
+const transporter = require("../utils/sendMail");
+const otpGenerator = require("otp-generator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 
 exports.admin_signup = async (req, res) => {
     try {
-        let { firstName, lastName, email, phoneNumber, password, address } = req.body;
+        let { 
+            firstName,
+             lastName, 
+             //email, 
+             phoneNumber,
+              password,
+               address 
+            } = req.body;
+            let email = req.body.email;
+        if (!email) {
+            return res.status(400).send({ status: false, msg: " Email is required" })
+        }
+        const isValidEmail = emailValidator.isEmail(email)
+        if (!isValidEmail) {
+            return res.status(400).send({ status: false, msg: " invalid email" })
+        }
+        const dataExist = await adminModel.findOne({ email: email });
+        if (dataExist) {
+            return res.status(400).send({ message: "email already in use" });
+        }
+
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password, salt);
-        const userData = { firstName, lastName, email, phoneNumber, password, address };
+
+        const userData = { 
+            firstName,
+             lastName,
+              email, 
+              phoneNumber, 
+              password,
+               address 
+            };
         const dataCreated = await adminModel.create(userData);
         return res.status(201).send({ message: "Admin created successfully", data: dataCreated });
     } catch (err) {
@@ -16,35 +47,173 @@ exports.admin_signup = async (req, res) => {
     }
 }
 
-exports.admin_login = async (req, res) => {
+exports.send_otp_toEmail = async (req, res) => {
     try {
-        const adminEmail = req.body.email;
-        const adminPassword = req.body.password;
-        const adminData = await adminModel.findOne({ email: adminEmail });
-        if (adminData) {
-            const { _id, firstName, lastName, password } = adminData;
-            const validPassword = await bcrypt.compare(adminPassword, password);
-            if (!validPassword) {
-                return res.status(400).send({ message: "Invalid Password" });
-            };
-            let payload = { userId: _id, email: adminEmail };
-            // const generatedToken = jwt.sign(payload,"sports-e-commerce",{expiresIn:'10080m'}); //i cut this line becoz error occurs "invalid signature"
-            const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-                expiresIn: "10080m",
-            });
-            res.header("jwt-token", generatedToken);
-            return res.status(200).send({ message: `${firstName} ${lastName} You are logged in`, token: generatedToken });
-        } else {
-            return res.status(400).send({ message: "Invalid credentials" });
-        };
+        const userMail = req.body.email;
+        const userData = await adminModel.findOne({ email: userMail });
+        if (!userData) {
+            return res
+                .status(400)
+                .send({ setting: { success: "0", message: "not valid user" } });
+        }
+        let mail_otp = otpGenerator.generate(4, {
+            upperCaseAlphabets: false,
+            specialChars: false,
+            lowerCaseAlphabets: false,
+        });
+
+        console.log(process.env.AUTH_EMAIL, process.env.AUTH_PASS);
+        await transporter.sendMail({
+            from: process.env.AUTH_EMAIL,
+            to: userMail,
+            subject: "OTP",
+            text: `Your OTP is ${mail_otp} to login into your account`,
+        });
+
+        const salt = await bcrypt.genSalt(10);
+        mail_otp = await bcrypt.hash(mail_otp, salt);
+
+        await adminModel.updateOne(
+            { email: userMail },
+            { $set: { mail_otp: mail_otp } }
+        );
+
+        return res
+            .status(200)
+            .send({ setting: { success: "1", message: "otp sent successfully" } });
     } catch (err) {
         return res.status(500).send(err.message);
-    };
+    }
+};
+
+exports.login = async (req, res) => {
+    try {
+        const userEmail = req.body.email;
+        const userOtp = req.body.otp;
+
+        const dataExist = await adminModel.findOne({ email: userEmail });
+        if (!dataExist)
+            return res.status(404).send({ message: "admin does not exist" });
+        const { _id, firstName, lastName } = dataExist;
+
+        const validOtp = await bcrypt.compare(userOtp, dataExist.mail_otp);
+        if (!validOtp) return res.status(400).send({ message: "Invalid OTP" });
+        
+        const payload = { adminId: _id, email: userEmail };
+        const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, /*{  expiresIn: "10080m",}*/); //in final code push remove the comment expires in time
+        res.header("jwt-token", generatedToken);
+        return res
+            .status(200)
+            .send({
+                message: `${firstName} ${lastName} you are logged in Successfully`,
+                Token: generatedToken,
+            });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+};
+
+// exports.admin_login = async (req, res) => {
+//     try {
+//         const adminEmail = req.body.email;
+//         const adminPassword = req.body.password;
+//         const adminData = await adminModel.findOne({ email: adminEmail });
+//         if (adminData) {
+//             const { _id, firstName, lastName, password } = adminData;
+//             const validPassword = await bcrypt.compare(adminPassword, password);
+//             if (!validPassword) {
+//                 return res.status(400).send({ message: "Invalid Password" });
+//             };
+//             let payload = { userId: _id, email: adminEmail };
+//             // const generatedToken = jwt.sign(payload,"sports-e-commerce",{expiresIn:'10080m'}); //i cut this line becoz error occurs "invalid signature"
+//             const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+//                 expiresIn: "10080m",
+//             });
+//             res.header("jwt-token", generatedToken);
+//             return res.status(200).send({ message: `${firstName} ${lastName} You are logged in`, token: generatedToken });
+//         } else {
+//             return res.status(400).send({ message: "Invalid credentials" });
+//         };
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     };
+// }
+
+exports.logout = async (req, res) => {    //not working test again later
+    try {
+        res.redirect("/user/login");
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
 }
+
+exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const customerData = await adminModel.findOne({ email: email });
+        if (!customerData) {
+            return res.status(400).send({ message: "email is not valid" });
+        }
+        const otp = Math.floor(100000 + Math.random() * 900000);
+        const mailOptions = {
+            from: process.env.AUTH_EMAIL,
+            to: email,
+            subject: "Forgot Password",
+            html: `<h1>OTP for forgot password is ${otp}</h1>`,
+        };
+        transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+                console.log(error);
+            } else {
+                console.log("Email sent: " + info);
+            }
+        });
+        await adminModel.findOneAndUpdate(
+            { email: email },
+            { otp: otp, otpTime: Date.now() }
+        );
+        return res.status(200).send({ message: "OTP sent to your email", email });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+};
+
+exports.updatePassword = async (req, res) => {
+    try {
+        const { email, otp, password } = req.body;
+        const customerData = await adminModel.findOne({ email: email });
+        if (!customerData) {
+            return res.status(400).send({ message: "email is not valid" });
+        }
+        if (!otp) {
+            return res.status(400).send({ message: "otp is required" });
+        }
+        if (customerData.otp == otp) {
+            if (Date.now() - customerData.otpTime > 300000) {
+                return res.status(400).send({ message: "OTP expired" });
+            }
+            const salt = await bcrypt.genSalt(10);
+            const newPassword = await bcrypt.hash(password, salt);
+            await adminModel.findOneAndUpdate(
+                { email: email },
+                { password: newPassword }
+            );
+            return res
+                .status(200)
+                .send({ message: "Password updated successfully" });
+        }
+        else {
+            return res.status(400).send({ message: "OTP is not correct" });
+        }
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+};
+
 
 exports.admin_update = async (req, res) => {
     try {
-        const adminId = req.body.adminId;
+        const adminId = req.user.adminId;
         let { firstName, lastName, email, phoneNumber, password, address, isDeleted } = req.body;
         const userAdmin = await adminModel.findOne({ _id: adminId });
         if (password) {
@@ -74,7 +243,7 @@ exports.admin_update = async (req, res) => {
 
 exports.getAdminById = async (req, res) => {
     try {
-        const adminId = req.body.adminId;
+        const adminId = req.user.adminId;
         const adminData = await adminModel.findOne({ _id: adminId });
         return res.status(200).send({ setting: { success: "1", message: "admin data", data: adminData } });
     } catch (err) {
@@ -94,7 +263,7 @@ exports.getAllAdmins = async (req, res) => {
 
 exports.deleteAdmin = async (req, res) => {
     try {
-        const adminId = req.body.adminId;
+        const adminId = req.user.adminId;
         const checkAdmin = await adminModel.find({ _id: adminId, isDeleted: false });
         if (checkAdmin) {
             const user = await adminModel.updateOne({ _id: adminId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });

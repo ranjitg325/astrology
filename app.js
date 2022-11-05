@@ -1,5 +1,11 @@
+var createError = require("http-errors");
 const express = require('express');
+var cors = require('cors');
 const bodyParser = require('body-parser');
+//var path = require("path")
+var cookieParser = require("cookie-parser");
+const multer = require('multer')
+var logger = require("morgan");
 
 
 const { default: mongoose } = require('mongoose');
@@ -22,7 +28,10 @@ require('dotenv').config();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(multer().any())
+app.use(cors());
+app.use(cookieParser());
+app.use(logger("dev"));
 
 mongoose.connect("mongodb+srv://sapna20:Sapnadha20@cluster0.crepr.mongodb.net/Project-astrology-db?retryWrites=true&w=majority", {
    useNewUrlParser: true
@@ -43,6 +52,11 @@ app.use('/videoUpload', videoUpload);  //if it is not working then pls check the
 app.use('/chatLive', chatLive);
 app.use('/paymentGateway', paymentGateway); //comment this line and run the server from  payment gateway controller, then it will run
 app.use('/liveStream', liveStream);
+
+
+app.use(function (req, res, next) {
+    next(createError(404));
+  });
 
 app.listen(process.env.PORT || 3000, function () {
     console.log('Express app running on port ' + (process.env.PORT || 3000))

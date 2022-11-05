@@ -1,52 +1,80 @@
 const cardModel = require("../models/cardModel");
 const adminModel= require("../models/adminModel")
+const aws = require("../aws/aws");
+
 
 exports.cardCreate = async (req, res) => {
     try {
-        const adminId = req.user.userId;
-        const adminData = await adminModel.findOne({ _id: adminId });
-        if (!adminData) {
-          return res.status(401).send({ message: "You are not authorized" });
-        }
-      
+        if(req.files && req.files.length > 0){
         let {
             subAdmin,
             cardName,
-            cardImage,
+            //cardImage,
             cardDescription,
-            todaysCard,
-            weeklyCard,
-            monthlyCard,
-            yearlyCard
+            cardType,
+            cardPrediction
         } = req.body;
+        if(!subAdmin || !cardName || !cardDescription || !cardType || !cardPrediction){
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        
+        //if(req.files && req.files.length > 0){
+            cardImage = await Promise.all(
+              req.files.map(async (file) => {
+                return await aws.uploadToS3(file.buffer);
+              })
+            );
+          //}
 
-        const cardRequest = {
+        let cardRequest = {
             subAdmin,
             cardName,
             cardImage,
             cardDescription,
-            todaysCard,
-            weeklyCard,
-            monthlyCard,
-            yearlyCard
+            cardType,
+            cardPrediction
         };
         const cardData = await cardModel.create(cardRequest);
-        return res
-            .status(201)
-            .send({ message: "card created successfully", data: cardData });
-    } catch (err) {
+        return res.status(200).send({ msg: "card created successfully", data: cardData });
+    }
+    else{
+        let {
+            subAdmin,
+            cardName,
+            cardDescription,
+            cardType,
+            cardPrediction
+        } = req.body;
+        if(!subAdmin || !cardName || !cardDescription || !cardType || !cardPrediction){
+            return res.status(400).json({ message: "All fields are required" });
+        }
+        
+        let cardRequest = {
+            subAdmin,
+            cardName,           
+            cardDescription,
+            cardType,
+            cardPrediction
+        };
+        const cardData = await cardModel.create(cardRequest);
+        return res.status(200).send({ msg: "card created successfully", data: cardData });
+    }
+    }
+     catch (err) {
         return res.status(500).send(err.message);
     }
-};
+}
+
 
 exports.getAllCards = async (req, res) => {
     try {
-        const adminId = req.user.userId;
-        const adminData = await adminModel.findOne({ _id: adminId });
-        if (!adminData) {
-          return res.status(401).send({ message: "You are not authorized" });
-        }
-        //const subAdmin = req.body.subAdmin;
+        // const adminId = req.user.userId;
+        // const adminData = await adminModel.findOne({ _id: adminId });
+        // if (!adminData) {
+        //   return res.status(401).send({ message: "You are not authorized" });
+        // }
+
+        ////const subAdmin = req.body.subAdmin;
         const cardCount = await cardModel.find({/*subAdmin:subAdmin,*/ isDeleted: false }).count();
         const cardData = await cardModel.find({/* subAdmin : subAdmin,*/isDeleted: false });
         return res.status(200).send({ msg: "cards fetched successfully", count: cardCount, data: cardData });

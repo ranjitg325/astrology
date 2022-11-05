@@ -5,10 +5,11 @@ const middleware = require("../middleware/authenticateUser");
 
 
 router.post('/blogCreate', middleware.authenticateToken,blogController.blogCreate);
-router.get('/getAllBlogs', middleware.authenticateToken,blogController.getAllBlogs);
-router.get('/getBlogById', middleware.authenticateToken,blogController.getBlogById);
-router.put('/updateBlog', middleware.authenticateToken,blogController.updateBlog);
-router.delete('/deleteBlog',middleware.authenticateToken, blogController.deleteBlog);
+router.get('/getAllBlogsOfOwn', middleware.authenticateToken,blogController.getAllBlogsOfOwn);
+router.get('/getAllBlogs', middleware.authenticateToken,blogController.getAllBlogsCreated);
+//router.get('/getBlogById', /*middleware.authenticateToken,*/blogController.getBlogById);
+router.patch('/updateBlog/:id', middleware.authenticateToken,blogController.updateBlog);
+router.delete('/deleteBlog/:id',middleware.authenticateToken, blogController.deleteBlog);
 
 
 
