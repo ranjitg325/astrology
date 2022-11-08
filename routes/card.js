@@ -4,11 +4,13 @@ const cardController = require('../controllers/cardController');
 const middleware = require("../middleware/authenticateUser");
 
 
-router.post('/cardCreate',/* middleware.authenticateToken,*/cardController.cardCreate);
-router.get('/getAllCards', /*middleware.authenticateToken,*/cardController.getAllCards);
-router.get('/getCardById',/* middleware.authenticateToken,*/cardController.getCardById);
-router.put('/updateCard', /*middleware.authenticateToken,*/cardController.updateCard);
-router.delete('/deleteCard',/*middleware.authenticateToken,*/ cardController.deleteCard);
+router.post('/cardCreate', middleware.authenticateToken,cardController.cardCreate);
+router.get('/getCardByType', middleware.authenticateToken,cardController.getCardByType);  //today,weekly,monthly,yearly
+router.get('/getAllCardsOfOwn', middleware.authenticateToken,cardController.getAllCardsOfOwn);
+router.get('/getAllCards', middleware.authenticateToken,cardController.getAllCards);
+//router.get('/getCardById',/* middleware.authenticateToken,*/cardController.getCardById);
+router.put('/updateCard/:id', middleware.authenticateToken,cardController.updateCard);
+router.delete('/deleteCard/:id',middleware.authenticateToken, cardController.deleteCard);
 
 
-module.exports = router;
+module.exports = router; 

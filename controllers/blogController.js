@@ -89,15 +89,16 @@ exports.updateBlog = async (req, res) => {
                 })
             );
         }
+        const subAdmin = req.user.adminId;
         const updatedBlog = await blogModel.findOneAndUpdate(
-            { _id: req.params.id },
+            { _id: req.params.id ,subAdmin: subAdmin},
             {
                 images,
                 title,
                 description,
                 content,
                 category,
-                subAdmin: req.user.adminId
+                //subAdmin: req.user.adminId
             },
             { new: true });
 

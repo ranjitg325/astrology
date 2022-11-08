@@ -1,4 +1,5 @@
 const userModel = require("../models/userModel.js")
+const cardModel = require("../models/cardModel.js");
 const emailValidator = require('validator')
 const transporter = require("../utils/sendMail");
 const otpGenerator = require("otp-generator");
@@ -30,7 +31,7 @@ exports.user_signup = async (req, res) => {
         }
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password, salt);
-        
+
         const userRequest = {
             firstName,
             lastName,
@@ -189,7 +190,7 @@ exports.updatePassword = async (req, res) => {
 
 exports.userUpdate = async (req, res) => {
     try {
-        
+
         const userId = req.user.userId;
         let {
             firstName,
@@ -202,7 +203,7 @@ exports.userUpdate = async (req, res) => {
             address,
             isDeleted
         } = req.body;
-        const userData = await userModel.findOne({_id:userId});
+        const userData = await userModel.findOne({ _id: userId });
         if (password) {
             const salt = await bcrypt.genSalt(10);
             password = await bcrypt.hash(password, salt);
@@ -218,7 +219,7 @@ exports.userUpdate = async (req, res) => {
         //             address.pincode = address.pincode;  
         //         }
         // }
-        if(userData.isDeleted==true){
+        if (userData.isDeleted == true) {
             return res.status(400).send({ message: "user is not registered, register first" });
         }
         const updatedData = await userModel.findOneAndUpdate(
@@ -246,9 +247,9 @@ exports.userUpdate = async (req, res) => {
 
 exports.getAllUser = async (req, res) => {
     try {
-        let count= await userModel.find({isDeleted:false}).count();
-        const user = await userModel.find({isDeleted:false});
-        return res.status(200).send({ message: "all user list", count : count ,data: user });
+        let count = await userModel.find({ isDeleted: false }).count();
+        const user = await userModel.find({ isDeleted: false });
+        return res.status(200).send({ message: "all user list", count: count, data: user });
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -267,14 +268,87 @@ exports.getUserById = async (req, res) => {
 exports.deleteUser = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const checkUser = await userModel.find({_id:userId,isDeleted:false});
-        if(checkUser){
-            const user = await userModel.updateOne({_id:userId,isDeleted:false},{$set: { isDeleted: true, deletedAt: Date.now() }},{new: true});
-            res.status(200).send({msg : "deleted successfully" , data: user });
-        }else{
+        const checkUser = await userModel.find({ _id: userId, isDeleted: false });
+        if (checkUser) {
+            const user = await userModel.updateOne({ _id: userId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
+            res.status(200).send({ msg: "deleted successfully", data: user });
+        } else {
             res.status(400).send({ error: 'user not found' });
         }
     } catch (err) {
         return res.status(500).send(err.message);
-    } 
+    }
+}
+
+
+exports.getOwnProfile = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await userModel.findById(userId).select('-password');
+        return res.status(200).send({ message: "user details", data: user });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+exports.getPredictionByCardTypeAndPredictionType = async (req, res) => {
+    try {
+        //if user want to see todays prediction then show this, if user want to see weekly prediction then show if else, if user want to see monthly prediction then show else, if user want to see yearly prediction then show else
+        if(req.body.cardType == "todaysCard"){
+        const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+        const prediction = await cardModel.find({
+            zodiacName: zodiacName, cardType: cardType,
+            predictionTypeAndDescription:
+            {
+                $elemMatch: { predictionType: predictionTypeAndDescription }
+            },
+            //show the data only created at after 12:00 am
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
+        });
+        return res.status(200).send({ message: "prediction details", data: prediction });
+        }
+        else if(req.body.cardType == "weeklyCard"){
+            const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+            const prediction = await cardModel.find({
+                zodiacName: zodiacName, cardType: cardType,
+                predictionTypeAndDescription:
+                {
+                    $elemMatch: { predictionType: predictionTypeAndDescription }
+                },
+                //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
+                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
+                
+            });
+            return res.status(200).send({ message: "prediction details", data: prediction });
+            }
+            else if(req.body.cardType == "monthlyCard"){
+                const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+                const prediction = await cardModel.find({
+                    zodiacName: zodiacName, cardType: cardType,
+                    predictionTypeAndDescription:
+                    {
+                        $elemMatch: { predictionType: predictionTypeAndDescription }
+                    },
+                    //if the user want to see monthly data then fetch the data creates after 12:00 am on any 1st of the month and every new month of 1st dont show the last month data
+                    createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
+                });
+                return res.status(200).send({ message: "prediction details", data: prediction });
+                }
+                else if(req.body.cardType == "yearlyCard"){
+                    const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+                    const prediction = await cardModel.find({
+                        zodiacName: zodiacName, cardType: cardType,
+                        predictionTypeAndDescription:
+                        {
+                            $elemMatch: { predictionType: predictionTypeAndDescription }
+                        },
+                        //if the user want to see yearly data then fetch the data creates after 12:00 am on any 1st of the year and every new year of 1st dont show the last year data
+                        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0).setDate(1) }  //not working
+                    });
+                    return res.status(200).send({ message: "prediction details", data: prediction });
+                    }
+             
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
 }
