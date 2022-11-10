@@ -22,6 +22,7 @@ const videoUpload = require('./routes/videoUpload.js');
 const chatLive = require('./routes/chatLive.js');
 const paymentGateway = require('./routes/paymentGateway.js');
 const liveStream = require('./routes/liveStream.js');
+const sheaduleForChat = require('./routes/sheaduleForChat.js');
 
 require('dotenv').config();
 // //const multer = require("multer")
@@ -49,9 +50,10 @@ app.use('/blog', blog);
 app.use('/upcomingFestival', upcomingFestival);
 app.use('/palmReader', palmReader);
 app.use('/videoUpload', videoUpload);  //if it is not working then pls check the multer,multer-s3,aws-sdk version "aws-sdk": "^2.895.0","multer": "^1.4.2","multer-s3": "^2.9.0"(go with these version only)
-app.use('/chatLive', chatLive);
+//app.use('/chatLive', chatLive);
 app.use('/paymentGateway', paymentGateway); //comment this line and run the server from  payment gateway controller, then it will run
 app.use('/liveStream', liveStream);
+app.use('/sheduleForChat', sheaduleForChat);
 
 
 app.use(function (req, res, next) {

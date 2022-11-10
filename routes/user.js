@@ -15,10 +15,13 @@ router.delete('/deleteUser',middleware.authenticateToken, userController.deleteU
 
 // user can see their profile
 router.get('/getProfile',middleware.authenticateToken, userController.getOwnProfile);
-//user will see his future prediction from cardModel by choosing cardType and predictionType
 router.get('/getPrediction',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionType);
-//user will see his past prediction from cardModel by choosing cardType and predictionType
-//router.get('/getPastPrediction',middleware.authenticateToken, userController.getPastPrediction);
+
+//user can check their horoscope
+router.get('/getHoroscope',middleware.authenticateToken, userController.getHoroscopeByType);
+
+//cancel sheduled chat with the astrologer
+router.put('/cancelSheduledChat',middleware.authenticateToken, userController.cancelMeeting);
 
 
 module.exports = router;

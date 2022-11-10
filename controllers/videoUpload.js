@@ -1,70 +1,106 @@
-require("dotenv").config()
-const express = require('express')
-const app = express();
 
-const aws = require('aws-sdk')
-const multer = require('multer')
-const multerS3 = require('multer-s3');
+const videoModel = require('../models/videoModel')
+const adminModel = require('../models/adminModel');
+const aws = require('../aws/awsForVideo');
 
-aws.config.update({
-    secretAccessKey: process.env.ACCESS_SECRET,
-    accessKeyId: process.env.ACCESS_KEY,
-    region: process.env.REGION,
-
-});
-const BUCKET = process.env.BUCKET
-const s3 = new aws.S3();
-
-const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        //acl: "public-read",
-        bucket: BUCKET,
-        key: function (req, file, cb) {
-            console.log(file);
-            cb(null, file.originalname)
+exports.createVideo = async (req, res) => {
+    try {
+        const { caption } = req.body;
+        let video = req.files;
+        // const user = await adminModel.findById(req.user.adminId);
+        // if (!user) {
+        //     return res.status(400).json({  msg: 'Admin not found' });
+        // }
+        //const reel = await aws.upload(video);
+        if (video && video.length > 0) {
+            video = await aws.uploadFile(video[0]);
         }
-    })
-})
+        else {
+            return res.status(400).send({ status: false, message: "video is required" })
+        }
+        const newReel = await new videoModel({
+            subAdmin: req.user.adminId,
+            video: video,
+            caption,
+        });
+        await newReel.save();
+        res.status(201).json({ message: 'video uploaded successfully', data : newReel });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({msg: err.message });
+    }
+}
 
-//upload.array("file")
-exports.upload=app.post('/upload', upload.single('file'), async function (req, res, next) {
+exports.updateVideo = async (req, res) => {
     try {
-    res.status(201).send('Successfully uploaded ' + req.file.location + ' location!')
-    } catch (error) {
-        console.log(error);
-    }
-})
+        const { caption } = req.body;
+        let video = req.files;
 
-exports.list=app.get("/list", async (req, res) => {
+        if (video && video.length > 0) {
+            video = await aws.uploadFile(video[0]);
+        }
+        else {
+            return res.status(400).send({ status: false, message: "video is required" })
+        }
+        const subAdmin = req.user.adminId;
+        const checkVideo = await videoModel.find({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
+        if(checkVideo){
+            const updateVideo = await videoModel.findOneAndUpdate({
+                _id: req.params.id,
+                subAdmin: subAdmin,
+                isDeleted: false
+            }, {
+                $set: {
+                    video: video,
+                    caption: caption,
+                }
+            }, { new: true });
+           return res.status(200).json({ msg: 'Video updated successfully', data: updateVideo });
+        }
+        else{
+            return res.status(400).json({ msg: 'Video not found' });
+        }
+        //res.status(200).json({ msg: 'Video updated successfully', data: updateVideo });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ msg: err.message });
+    }
+}
+
+exports.getAllVideos = async (req, res) => {
     try {
-    let r = await s3.listObjectsV2({ Bucket: BUCKET }).promise();
-    let x = r.Contents.map(item => item.Key);
-    return res.status(200).send(x)
-    } catch (error) {
-        console.log(error);
+        const videoCount = await videoModel.find({ isDeleted: false }).count();
+        const videoData = await videoModel.find({ isDeleted: false });
+        return res.status(200).send({ msg: "videos fetched successfully", count: videoCount, data: videoData });
+    } catch (err) {
+        return res.status(500).send(err.message);
     }
-})
+}
 
-
-exports.download=app.get("/download/:filename", async (req, res) => {
-    try{
-    const filename = req.params.filename
-    let x = await s3.getObject({ Bucket: BUCKET, Key: filename }).promise();
-    res.status(200).send(x.Body)
+exports.getallvideoOfOwn = async (req, res) => {
+    try {
+        const subAdmin = req.user.adminId;
+        const videoCount = await videoModel.find({ subAdmin: subAdmin, isDeleted: false }).count();
+        const videoData = await videoModel.find({ subAdmin: subAdmin, isDeleted: false });
+        return res.status(200).send({ msg: "videos fetched successfully", count: videoCount, data: videoData });
+    } catch (err) {
+        return res.status(500).send(err.message);
     }
+}
+
+exports.deleteVideo = async (req, res) => {
+ try{
+    const subAdmin = req.user.adminId;
+    const checkVideo = await videoModel.find({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
+    if(checkVideo){
+        const deleteVideo = await videoModel.findOneAndUpdate({ _id:req.params.id,subAdmin: subAdmin,isDeleted: false},{ $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
+        return res.status(200).send({ msg: "video deleted successfully", data: deleteVideo });
+    }
+    else{
+        return res.status(400).send({ msg: "video not found" });
+    }
+ }
     catch(err){
-        console.log(err)
+        return res.status(500).send(err.message);
     }
-})
-
-exports.delete=app.delete("/delete/:filename", async (req, res) => {
-    try{
-    const filename = req.params.filename
-    await s3.deleteObject({ Bucket: BUCKET, Key: filename }).promise();
-    return res.status(200).send("File Deleted Successfully")
-    }
-    catch(err){
-        return res.send(err)
-    }
-})
+}

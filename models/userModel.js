@@ -50,6 +50,10 @@ const userSchema = new mongoose.Schema({
         type:String,
         unique:true,
       },
+      mobile_otp:{       //when a user login after registration, he will be asked to verify his mobile number
+        type:String,
+        unique:true,
+        },
     otp:{              //when user forgot his password, he will be asked to verify his email address using otp
         type:String,
         unique:true,

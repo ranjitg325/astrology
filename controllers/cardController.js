@@ -181,9 +181,9 @@ exports.deleteCard = async (req, res) => {
         const checkCard = await cardModel.find({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
         if (checkCard) {
             const user = await cardModel.findOneAndUpdate({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
-            res.status(200).send({ msg: "card deleted successfully", data: user });
+           return res.status(200).send({ msg: "card deleted successfully", data: user });
         } else {
-            res.status(400).send({ error: 'card not found' });
+            return res.status(400).send({ error: 'card not found' });
         }
     }
     catch (err) {
