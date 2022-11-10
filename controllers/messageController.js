@@ -20,7 +20,8 @@ class APIfeatures {
   
   exports.createMessage = async (req, res) => {
     try {
-      const { sender, recipient, text, media, call } = req.body;
+      const { recipient, text, media, call } = req.body;
+      const sender = req.user.userId;
   
       if (!recipient || (!text.trim() && media.length === 0 && !call)) return;
   
@@ -42,7 +43,7 @@ class APIfeatures {
   
       const newMessage = new Messages({
         conversation: newConversation._id,
-        sender,
+        sender:req.user.userId,
         call,
         recipient,
         text,

@@ -101,19 +101,11 @@ exports.user_signup = async (req, res) => {
 
 exports.send_otp_toEmail = async (req, res) => {
     try {
-      const userMail = req.body.email||req.body.phone;
-      if(userMail.includes("@")){
-      const userData = await userModel.findOne({ email: userMail });
-      if (!userData) {
-        return res.status(400).send({ msg: "not valid user" });
-      }
-    }
-    else{
+      const userMail = req.body.phone;
       const userData = await userModel.findOne({ phone: userMail });
       if (!userData) {
         return res.status(400).send({ msg: "not valid user" }); 
       }
-    }
       // OTP Generation
       let mail_otp = otpGenerator.generate(4, {
         upperCaseAlphabets: false,
@@ -122,28 +114,9 @@ exports.send_otp_toEmail = async (req, res) => {
       });
       
       const to = userMail;
-      const subject = "OTP for Email or phone Verification";
+      const subject = "OTP for phone Verification";
       const text = `Your OTP is ${mail_otp}`;
   
-      console.log(process.env.AUTH_EMAIL, process.env.AUTH_PASS);
-      // checking for the mail or phone number
-      if(userMail.includes('@')){
-          await transporter.sendMail({
-            from: process.env.AUTH_EMAIL,
-            to: userMail,
-            subject: subject,
-            text: `Your OTP is ${mail_otp} to login into your account`,
-          });
-          const salt = await bcrypt.genSalt(10);
-          mail_otp = await bcrypt.hash(mail_otp, salt);
-  
-        await userModel.updateOne(
-          { email: userMail },
-          { $set: { mail_otp: mail_otp } }
-        );
-  
-      }
-      else{
         if(userMail.length == 10){
           var toPhone = "91".concat(userMail);
         }
@@ -161,6 +134,7 @@ exports.send_otp_toEmail = async (req, res) => {
               }
           }
         });
+    
         const salt = await bcrypt.genSalt(10);
         mail_otp = await bcrypt.hash(mail_otp, salt);
   
@@ -168,11 +142,6 @@ exports.send_otp_toEmail = async (req, res) => {
           { phone: userMail },
           { $set: { mobile_otp: mail_otp } }
         );
-  
-    }
-  
-      const salt = await bcrypt.genSalt(10);
-      mail_otp = await bcrypt.hash(mail_otp, salt);
   
       await userModel.updateOne(
         { email: userMail },
