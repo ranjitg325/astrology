@@ -2,9 +2,12 @@ const aws = require("aws-sdk");
 
 aws.config.update(
     {
-        accessKeyId: "AKIAQ6BK7WR56ICUKSEE",
-        secretAccessKey: "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",
-        region: "ap-south-1"
+        // accessKeyId: "...",
+        // secretAccessKey: "...",
+        // region: "..."
+        accessKeyId: process.env.ACCESS_KEY,
+        secretAccessKey: process.env.ACCESS_SECRET,
+        region: process.env.REGION
     }
 )
 
@@ -15,7 +18,8 @@ let uploadFile = async (file) => {
 
         var uploadParams = {
             //ACL: "public-read",
-            Bucket: "meta-unite-server",
+           // Bucket: "...",
+             Bucket : process.env.BUCKET,
             Key: "profileImg/" + file.originalname,
             Body: file.buffer
         }

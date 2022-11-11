@@ -4,12 +4,16 @@ dotenv.config();
 const AWS = require("aws-sdk");
 let multer = require("multer");
 
-const bucketName = "meta-unite-server"
+const bucketName = process.env.BUCKET
+//const bucketName = "...."
 
 const awsConfig = {
-    accessKeyId: "AKIAQ6BK7WR56ICUKSEE",
-        secretAccessKey: "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",
-        region: "ap-south-1"
+    accessKeyId: process.env.ACCESS_KEY,
+    secretAccessKey: process.env.ACCESS_SECRET,
+    region: process.env.REGION
+    // accessKeyId: "...",
+    //     secretAccessKey: "...",
+    //     region: "..."
 };
 
 const S3 = new AWS.S3(awsConfig);
