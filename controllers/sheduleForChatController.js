@@ -57,5 +57,4 @@ exports.sheduleChat = async (req, res) => {
         }
  }
 
-//at the time of meeting, user and astrologer will redirect to chatLive page
-//exports.userAndAstrologerRedirectToChatLivePage = async (req, res) => {
+ 

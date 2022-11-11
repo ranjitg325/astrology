@@ -3,11 +3,11 @@ const mongoose = require("mongoose");
 const messageSchema = new mongoose.Schema(
   {
     conversation: { type: mongoose.Types.ObjectId, ref: "conversation" },
-    sender: { type: mongoose.Types.ObjectId, ref: "user" },
-    recipient: [{ type: mongoose.Types.ObjectId, ref: "admin" }],
+    sender: { type: mongoose.Types.ObjectId, ref: "user || admin " },
+    recipient: [{ type: mongoose.Types.ObjectId, ref: "user || admin" }],
     text: String,
-    media: Array,
-    call: Object
+    // media: Array,
+    // call: Object
   },
   {
     timestamps: true,

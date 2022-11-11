@@ -58,39 +58,11 @@ const uploadToS3 = (fileData) => {
                 return reject(err);
             }
             console.log(data);
-            return resolve(data);
+            return resolve(data.Location);
         });
     });
 };
 
-// //upload single image to s3
-// app.post("/upload", upload.single("image"), async (req, res) => {
-//     console.log(req.file);
-//     if (req.file) {
-//         await uploadToS3(req.file.buffer);
-//     }
 
-//     res.send({
-//         msg: "Image uploaded succesfully",
-//     });
-// });
-
-// //upload multiple images to s3
-// app.post("/upload-multiple", upload.array("images", 8), async (req, res) => {
-//     // console.log(req.files);
-
-//     if (req.files && req.files.length > 0) {
-//         for (var i = 0; i < req.files.length; i++) {
-//             // console.log(req.files[i]);
-//             await uploadToS3(req.files[i].buffer);
-//         }
-//     }
-
-//     res.send({
-//         msg: "Successfully uploaded " + req.files.length + " files!",
-//     });
-// });
 
 module.exports = {uploadToS3};
-
-//app.listen(PORT, () => console.log("server is running on " + PORT));

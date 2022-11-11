@@ -23,6 +23,8 @@ const chatLive = require('./routes/chatLive.js');
 const paymentGateway = require('./routes/paymentGateway.js');
 const liveStream = require('./routes/liveStream.js');
 const sheaduleForChat = require('./routes/sheaduleForChat.js');
+const message = require('./routes/message.js');
+const jyotis = require('./routes/jyotis.js');
 
 require('dotenv').config();
 // //const multer = require("multer")
@@ -54,6 +56,9 @@ app.use('/videoUpload', videoUpload);  //if it is not working then pls check the
 app.use('/paymentGateway', paymentGateway); //comment this line and run the server from  payment gateway controller, then it will run
 app.use('/liveStream', liveStream);
 app.use('/sheduleForChat', sheaduleForChat);
+app.use('/message',message );
+app.use('/jyotis',jyotis );
+
 
 
 app.use(function (req, res, next) {

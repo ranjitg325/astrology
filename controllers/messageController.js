@@ -20,10 +20,10 @@ class APIfeatures {
   
   exports.createMessage = async (req, res) => {
     try {
-      const { recipient, text, media, call } = req.body;
-      const sender = req.user.userId;
+      const { sender,recipient, text, /*media, call*/ } = req.body;
+      //const sender = req.user.userId;
   
-      if (!recipient || (!text.trim() && media.length === 0 && !call)) return;
+      if (!recipient || (!text.trim() /*&& media.length === 0 && !call*/)) return;
   
       const newConversation = await Conversations.findOneAndUpdate(
         {
@@ -35,19 +35,20 @@ class APIfeatures {
         {
           recipients: [sender, recipient],
           text,
-          media,
-          call,
+        //   media,
+        //   call,
         },
         { new: true, upsert: true }
       );
   
       const newMessage = new Messages({
         conversation: newConversation._id,
-        sender:req.user.userId,
-        call,
+        sender,
+        //sender:req.user.userId,
+        //call,
         recipient,
         text,
-        media,
+        //media,
       });
   
       await newMessage.save();
@@ -57,3 +58,61 @@ class APIfeatures {
       return res.status(500).json({ msg: err.message });
     }
   }
+
+  exports.getConversations= async (req, res) => {
+    try {
+      const features = new APIfeatures(
+        Conversations.find({
+          recipients: req.user._id,
+        }),
+        req.query
+      ).paginating();
+
+      const conversations = await features.query
+        .sort("-updatedAt")
+        .populate("recipients", "avatar username fullname");
+
+      res.json({
+        conversations,
+        result: conversations.length,
+      });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  }
+
+  exports.getMessages = async (req, res) => {
+    try {
+      const features = new APIfeatures(
+        Messages.find({
+          $or: [
+            { sender: req.user._id, recipient: req.params.id },
+            { sender: req.params.id, recipient: req.user._id },
+          ],
+        }),
+        req.query
+      ).paginating();
+
+      const messages = await features.query.sort("-createdAt");
+
+      res.json({
+        messages,
+        result: messages.length,
+      });
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  }
+
+  // exports.deleteMessages = async (req, res) => {
+  //   try {
+  //     const deleteMsg = await Messages.findOneAndDelete({
+  //       _id: req.params.id, //id= message id
+  //       sender: req.user._id,
+  //     });
+  //     res.json({ msg: "Delete Success!", data: deleteMsg });
+  //   } catch (err) {
+  //     return res.status(500).json({ msg: err.message });
+  //   }
+  // }
+

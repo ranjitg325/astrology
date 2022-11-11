@@ -4,7 +4,7 @@ const userController = require('../controllers/userController');
 const middleware = require("../middleware/authenticateUser");
 
 router.post('/userCreate', userController.user_signup);
-router.post('/email_otp',userController.send_otp_toEmail);
+router.post('/email_otp',userController.send_otp_toPhone);
 router.post('/login',userController.login);
 router.get('/logout', userController.logout);
 router.post('/forgotPassword', userController.forgotPassword); //not tested

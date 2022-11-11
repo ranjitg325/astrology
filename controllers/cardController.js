@@ -1,101 +1,78 @@
 const cardModel = require("../models/cardModel");
 const adminModel = require("../models/adminModel")
-const aws = require("../aws/aws");
-
-exports.cardCreate = async (req, res) => {
-    try{
-        let {
-            zodiacName,
-            //zodiacImage,
-            cardType,
-            predictionTypeAndDescription,
-    } = req.body;
-    let zodiacImage = req.files;
-
-    if(!zodiacName || !cardType || !predictionTypeAndDescription){
-        return res.status(400).json({message:"All fields are required"});
-    }
-    if(req.files && req.files.length > 0){
-        zodiacImage = await Promise.all(
-            req.files.map(async (file) => {
-                return await aws.uploadToS3(file.buffer);
-            })
-        );
-    }
-    const newCard = new cardModel({
-        zodiacName,
-        zodiacImage,
-        cardType,
-        predictionTypeAndDescription,
-        subAdmin:req.user.adminId
-    });
-    const cardData = await newCard.save();
-    return res.status(201).send({message:"card created successfully",data:cardData});
-    }catch(err){
-        return res.status(500).send(err.message);
-    }
-}
-
+const aws = require("../aws/awsForVideo");
 
 // exports.cardCreate = async (req, res) => {
-//     try {
-//         if (req.files && req.files.length > 0) {
-//             let {
-//                 //subAdmin,
-//                 cardName,
-//                 //cardImage,
-//                 cardDescription,
-//                 cardType,
-//                 cardPrediction
-//             } = req.body;
-//             if (!cardName || !cardDescription || !cardType || !cardPrediction) {
-//                 return res.status(400).json({ message: "All fields are required" });
-//             }
+//     try{
+//         let {
+//             zodiacName,
+//             //zodiacImage,
+//             cardType,
+//             predictionTypeAndDescription,
+//     } = req.body;
+//     let zodiacImage = req.files;
 
-//             //if(req.files && req.files.length > 0){
-//             cardImage = await Promise.all(
-//                 req.files.map(async (file) => {
-//                     return await aws.uploadToS3(file.buffer);
-//                 })
-//             );
-//             //}
-//             const newCard = new cardModel({
-//                 subAdmin: req.user.adminId,
-//                 cardName,
-//                 cardImage,
-//                 cardDescription,
-//                 cardType,
-//                 cardPrediction
-//             });
-//             const cardData = await newCard.save();
-//             return res.status(200).send({ msg: "card created successfully", data: cardData });
-//         }
-//         else {
-//             let {
-//                 cardName,
-//                 cardDescription,
-//                 cardType,
-//                 cardPrediction
-//             } = req.body;
-//             if (!cardName || !cardDescription || !cardType || !cardPrediction) {
-//                 return res.status(400).json({ message: "All fields are required" });
-//             }
-//             const newCard = new cardModel({
-//                 subAdmin: req.user.adminId,
-//                 cardName,
-//                 //cardImage,
-//                 cardDescription,
-//                 cardType,
-//                 cardPrediction
-//             });
-//             const cardData = await newCard.save();
-//             return res.status(200).send({ msg: "card created successfully", data: cardData });
-//         }
+//     if(!zodiacName || !cardType || !predictionTypeAndDescription){
+//         return res.status(400).json({message:"All fields are required"});
 //     }
-//     catch (err) {
+//     if(req.files && req.files.length > 0){
+//         zodiacImage = await Promise.all(
+//             req.files.map(async (file) => {
+//                 return await aws.uploadToS3(file.buffer);
+//             })
+//         );
+//     }
+//     const newCard = new cardModel({
+//         zodiacName,
+//         zodiacImage,
+//         cardType,
+//         predictionTypeAndDescription,
+//         subAdmin:req.user.adminId
+//     });
+//     const cardData = await newCard.save();
+//     return res.status(201).send({message:"card created successfully",data:cardData});
+//     }catch(err){
 //         return res.status(500).send(err.message);
 //     }
 // }
+
+
+exports.cardCreate = async (req, res) => {
+    try {
+            let {
+                //subAdmin,
+                cardTitle,
+                zodiacName,
+                cardType,
+                predictionTypeAndDescription,
+            } = req.body;
+            let cardImage = req.files;
+
+            if (!cardTitle || !zodiacName || !cardType || !predictionTypeAndDescription) {
+                return res.status(400).json({ message: "All fields are required" });
+            }
+
+            if (cardImage && cardImage.length > 0) {
+                cardImage = await aws.uploadFile(cardImage[0]);
+            }
+            else {
+                return res.status(400).send({ status: false, message: "cardImage is required" })
+            }
+            const newCard = new cardModel({
+                //subAdmin: req.user.adminId,
+                cardTitle,
+                cardImage,
+                zodiacName,
+                cardType,
+                predictionTypeAndDescription,
+            });
+            const cardData = await newCard.save();
+            return res.status(200).send({ msg: "card created successfully", data: cardData });
+        }
+    catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
 
 
 exports.getCardByType = async (req, res) => {
@@ -144,24 +121,25 @@ exports.getAllCards = async (req, res) => {
 exports.updateCard = async (req, res) => {
     try {
         let {
-            cardName,
-            cardDescription,
+            cardTitle,
+            zodiacName,
             cardType,
-            cardPrediction
+            predictionTypeAndDescription,
         } = req.body;
         let cardImage = req.files;
 
-        if (req.files && req.files.length > 0) {
-            cardImage = await Promise.all(
-                req.files.map(async (file) => {
-                    return await aws.uploadToS3(file.buffer);
-                })
-            );
+       
+        if (cardImage && cardImage.length > 0) {
+            cardImage = await aws.uploadFile(cardImage[0]);
         }
+        else {
+            return res.status(400).send({ status: false, message: "cardImage is required" })
+        }
+
         const subAdmin = req.user.adminId;
         const updatedCard = await cardModel.findOneAndUpdate(
             { _id: req.params.id , subAdmin: subAdmin}, //card id
-            { $set: { cardName, cardImage, cardDescription, cardType, cardPrediction } },
+            { $set: { cardTitle, cardImage, zodiacName, cardType, predictionTypeAndDescription } },
             { new: true });
             if (!updatedCard) {
                 return res.status(400).send({ msg: "No card found" });

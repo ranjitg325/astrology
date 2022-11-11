@@ -99,7 +99,7 @@ exports.user_signup = async (req, res) => {
 //     }
 // };
 
-exports.send_otp_toEmail = async (req, res) => {
+exports.send_otp_toPhone = async (req, res) => {
     try {
       const userMail = req.body.phone;
       const userData = await userModel.findOne({ phone: userMail });
@@ -377,9 +377,9 @@ exports.deleteUser = async (req, res) => {
         const checkUser = await userModel.find({ _id: userId, isDeleted: false });
         if (checkUser) {
             const user = await userModel.updateOne({ _id: userId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
-            res.status(200).send({ msg: "deleted successfully", data: user });
+           return res.status(200).send({ msg: "deleted successfully", data: user });
         } else {
-            res.status(400).send({ error: 'user not found' });
+            return res.status(400).send({ error: 'user not found' });
         }
     } catch (err) {
         return res.status(500).send(err.message);
