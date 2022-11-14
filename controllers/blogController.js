@@ -29,7 +29,7 @@ exports.blogCreate = async (req, res) => {
             description,
             content,
             category,
-            subAdmin: req.user.adminId
+            /*jyotish: req.user.userId*/
         });
         const blogData = await newBlog.save();
         return res
@@ -42,9 +42,9 @@ exports.blogCreate = async (req, res) => {
 
 exports.getAllBlogsOfOwn = async (req, res) => {
     try {
-        const subAdmin = req.user.adminId;
-        const blogCount = await blogModel.find({ subAdmin: subAdmin, isDeleted: false }).count();
-        const blogData = await blogModel.find({ subAdmin: subAdmin, isDeleted: false });
+        /*const jyotish =  req.user.userId;*/
+        const blogCount = await blogModel.find({ /*jyotish: jyotish,*/ isDeleted: false }).count();
+        const blogData = await blogModel.find({ /*jyotish: jyotish,*/ isDeleted: false });
         return res.status(200).send({ msg: "blogs fetched successfully", count: blogCount, data: blogData });
     } catch (err) {
         return res.status(500).send(err.message);
@@ -88,17 +88,17 @@ exports.updateBlog = async (req, res) => {
                     return await aws.uploadToS3(file.buffer);
                 })
             );
-        }
-        const subAdmin = req.user.adminId;
+        }  
+        //const jyotish =  req.user.userId;
         const updatedBlog = await blogModel.findOneAndUpdate(
-            { _id: req.params.id ,subAdmin: subAdmin},
+            { _id: req.params.id /*,jyotish: jyotish*/},
             {
                 images,
                 title,
                 description,
                 content,
                 category,
-                //subAdmin: req.user.adminId
+                //jyotish : req.user.userId
             },
             { new: true });
 
@@ -116,12 +116,12 @@ exports.deleteBlog = async (req, res) => {
     try {
         const blog = await blogModel.find({
           _id: req.params.id,  //blog id
-          subAdmin: req.user.adminId,
+          //jyotish: req.user.userId,
           isDeleted: false
         });
 
         if (blog) {
-            const user = await blogModel.findOneAndUpdate({ _id: req.params.id, subAdmin: req.user.adminId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
+            const user = await blogModel.findOneAndUpdate({ _id: req.params.id, /*jyotish: req.user.userId,*/ isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
            return res.status(200).send({ msg: "blog deleted successfully", data: user });
         } else {
            return res.status(400).send({ error: 'blog not found' });

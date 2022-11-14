@@ -1,10 +1,10 @@
 const mongoose = require('mongoose')
 
 const blogschema = new mongoose.Schema({
-    subAdmin:{
+    jyotish:{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'admin'
+        ref: 'jyotish'
     },
     images:{
         type: Array

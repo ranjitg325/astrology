@@ -53,9 +53,11 @@ const jyotisSchema = new mongoose.Schema(
             },
         },
         rating: {
-            type: String,
+            type: Number,
             //required:true,
-            trim: true
+            min: 1,
+            max: 5,
+            default: null
         },
         experience: {
             type: Number,

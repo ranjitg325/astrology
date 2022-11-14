@@ -1,33 +1,34 @@
 const adminModel= require("../models/adminModel")
+const jyotisModel = require("../models/jyotisModel")
 const userModel = require("../models/userModel")
 const sheduleModel = require("../models/SheduleForChatModel")
 const cardModel = require("../models/cardModel")
 const videoModel = require("../models/videoModel")
 const aws = require("../aws/aws");
-const { v4: uuidv4 } = require('uuid');
+
 
 
 //shedule a chat for user to astrologer if astrologer time slot is available
 exports.sheduleChat = async (req, res) => {
     try {
-        let { astrologerId, date, time } = req.body;
-        if (!astrologerId || !date || !time) {
+        let { jyotishId, date, time } = req.body;
+        if (!jyotishId || !date || !time) {
             return res.status(400).json({ message: "All fields are required" });
         }
-        const astrologer = await adminModel.findById(astrologerId);
-        if (!astrologer) {
+        const jyotish = await jyotisModel.findById(jyotishId);
+        if (!jyotish) {
             return res.status(400).json({ message: "astrologer not found" });
         }
         const user = await userModel.findById(req.user.userId);
         if (!user) {
             return res.status(400).json({ message: "user not found" });
         }
-        const shedule = await sheduleModel.findOne({ astrologer: astrologerId, date: date, time: time });
+        const shedule = await sheduleModel.findOne({ jyotish: jyotishId, date: date, time: time });
         if (shedule) {
             return res.status(400).json({ message: "astrologer time slot is already booked" });
         }
         const newShedule = new sheduleModel({
-            astrologer: astrologerId,
+            jyotish: jyotishId,
             user: req.user.userId,
             date: date,  
             time: time

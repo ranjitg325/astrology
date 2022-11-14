@@ -27,7 +27,7 @@ const aws = require("../aws/awsForVideo");
 //         zodiacImage,
 //         cardType,
 //         predictionTypeAndDescription,
-//         subAdmin:req.user.adminId
+//         jyotish:req.user.userId
 //     });
 //     const cardData = await newCard.save();
 //     return res.status(201).send({message:"card created successfully",data:cardData});
@@ -40,7 +40,7 @@ const aws = require("../aws/awsForVideo");
 exports.cardCreate = async (req, res) => {
     try {
             let {
-                //subAdmin,
+                //jyotish,
                 cardTitle,
                 zodiacName,
                 cardType,
@@ -59,7 +59,7 @@ exports.cardCreate = async (req, res) => {
                 return res.status(400).send({ status: false, message: "cardImage is required" })
             }
             const newCard = new cardModel({
-                //subAdmin: req.user.adminId,
+                //jyotish: req.user.userId,
                 cardTitle,
                 cardImage,
                 zodiacName,
@@ -89,9 +89,9 @@ exports.getCardByType = async (req, res) => {
 }
 exports.getAllCardsOfOwn = async (req, res) => {
     try {
-        const subAdmin = req.user.adminId;
-        const cardCount = await cardModel.find({ subAdmin: subAdmin, isDeleted: false }).count();
-        const cardData = await cardModel.find({ subAdmin: subAdmin, isDeleted: false });
+        /*const jyotish = req.user.userId;*/
+        const cardCount = await cardModel.find({ /*jyotish: jyotish,*/ isDeleted: false }).count();
+        const cardData = await cardModel.find({ /*jyotish: jyotish,*/ isDeleted: false });
         return res.status(200).send({ msg: "cards fetched successfully", count: cardCount, data: cardData });
     } catch (err) {
         return res.status(500).send(err.message);
@@ -136,9 +136,9 @@ exports.updateCard = async (req, res) => {
             return res.status(400).send({ status: false, message: "cardImage is required" })
         }
 
-        const subAdmin = req.user.adminId;
+        //const jyotish = req.user.userId;
         const updatedCard = await cardModel.findOneAndUpdate(
-            { _id: req.params.id , subAdmin: subAdmin}, //card id
+            { _id: req.params.id  /*,jyotish: jyotish*/}, //card id
             { $set: { cardTitle, cardImage, zodiacName, cardType, predictionTypeAndDescription } },
             { new: true });
             if (!updatedCard) {
@@ -152,13 +152,13 @@ exports.updateCard = async (req, res) => {
 }
 
 
-//subAdmin can delete his own card only
+//jyotish can delete his own card only
 exports.deleteCard = async (req, res) => {
     try {
-        const subAdmin = req.user.adminId;
-        const checkCard = await cardModel.find({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
+        //const jyotish = req.user.userId;
+        const checkCard = await cardModel.find({ _id: req.params.id, /*jyotish: jyotish,*/ isDeleted: false });
         if (checkCard) {
-            const user = await cardModel.findOneAndUpdate({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
+            const user = await cardModel.findOneAndUpdate({ _id: req.params.id, /*jyotish: jyotish,*/ isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
            return res.status(200).send({ msg: "card deleted successfully", data: user });
         } else {
             return res.status(400).send({ error: 'card not found' });

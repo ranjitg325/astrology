@@ -1,105 +1,122 @@
 const palmReaderModel = require("../models/palmReaderModel");
-const adminModel= require("../models/adminModel")
+const jyotisModel = require("../models/jyotisModel");
+const aws = require("../aws/awsForVideo");
 
-exports.palmReaderCreate = async (req, res) => {    
+exports.palmReaderCreate = async (req, res) => {
     try {
-        // const adminId = req.user.userId;
-        // const adminData = await adminModel.findOne({ _id: adminId });
-        // if (!adminData) {
-        //   return res.status(401).send({ message: "You are not authorized" });
-        // }
-      
         let {
-            subAdmin,
+            //jyotish,
             heartLineReading,
             headLineReading,
             lifeLineReading,
             fateLineReading,
-            marriageLineReading
+            marriageLineReading,
+            finalResult
         } = req.body;
-
-        const palmReaderRequest = {
-            subAdmin,
+        let DesignOfLineImage = req.files;
+        
+        if (DesignOfLineImage && DesignOfLineImage.length > 0) {
+            DesignOfLineImage = await aws.uploadFile(DesignOfLineImage[0]);
+        }
+        else {
+            return res.status(400).send({ status: false, message: "DesignOfLineImage is required" })
+        }
+       
+        const newPalmReader = new palmReaderModel({
+            //jyotish:req.user.userId,
             heartLineReading,
             headLineReading,
             lifeLineReading,
             fateLineReading,
-            marriageLineReading
-        };
-        const palmReaderData = await palmReaderModel.create(palmReaderRequest);
-        return res
-            .status(201)
-            .send({ message: "palmReader created successfully", data: palmReaderData });
+            marriageLineReading,
+            DesignOfLineImage,
+            finalResult
+        });
+        const palmReaderData = await newPalmReader.save();
+        return res.status(201).send({ message: "palmReader created successfully", data: palmReaderData });
     } catch (err) {
         return res.status(500).send(err.message);
     }
-};
+}
 
 exports.getAllPalmReaders = async (req, res) => {
     try {
-        // const adminId = req.user.userId;
-        // const adminData = await adminModel.findOne({ _id: adminId });
-        // if (!adminData) {
-        //   return res.status(401).send({ message: "You are not authorized" });
-        // }
-        //const subAdmin = req.body.subAdmin;
-        const palmReaderCount = await palmReaderModel.find({/*subAdmin:subAdmin,*/ isDeleted: false }).count();
-        const palmReaderData = await palmReaderModel.find({/* subAdmin : subAdmin,*/isDeleted: false });
-//const palmReader= await palmReaderModel.find({userid:userid,isDeleted:false})
+        const palmReaderCount = await palmReaderModel.find({ isDeleted: false }).count();
+        const palmReaderData = await palmReaderModel.find({isDeleted: false });
         return res.status(200).send({ msg: "palmReaders fetched successfully", count: palmReaderCount, data: palmReaderData });
     } catch (err) {
         return res.status(500).send(err.message);
     }
 };
 
-exports.getPalmReaderById = async (req, res) => {
+exports.getAllPalmReadOfOwn = async (req, res) => {
     try {
-        const palmReaderId = req.body.palmReaderId;
-        const palmReaderData = await palmReaderModel.findOne({ _id: palmReaderId });
-        return res.status(200).send({ msg: "palmReader fetched successfully", data: palmReaderData });
+        const jyotish = req.user.userId;
+        const palmReaderCount = await palmReaderModel.find({ jyotish: jyotish, isDeleted: false }).count();
+        const palmReaderData = await palmReaderModel.find({ jyotish: jyotish, isDeleted: false });
+        return res.status(200).send({ msg: "palmReaders fetched successfully", count: palmReaderCount, data: palmReaderData });
     } catch (err) {
         return res.status(500).send(err.message);
     }
 };
 
+// exports.getPalmReaderById = async (req, res) => {
+//     try {
+//         const palmReaderId = req.body.palmReaderId;
+//         const palmReaderData = await palmReaderModel.findOne({ _id: palmReaderId });
+//         return res.status(200).send({ msg: "palmReader fetched successfully", data: palmReaderData });
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     }
+// };
+
 exports.updatePalmReaderById = async (req, res) => {
     try {
-        const palmReaderId = req.body.palmReaderId;
+        const palmReaderId = req.params.id;
         let {
-            subAdmin,
             heartLineReading,
             headLineReading,
             lifeLineReading,
             fateLineReading,
-            marriageLineReading
+            marriageLineReading,
+            finalResult
         } = req.body;
+        let DesignOfLineImage = req.files;
 
-        const palmReaderRequest = {
-            subAdmin,
+        if (DesignOfLineImage && DesignOfLineImage.length > 0) {
+            DesignOfLineImage = await aws.uploadFile(DesignOfLineImage[0]);
+        }
+        else {
+            return res.status(400).send({ status: false, message: "DesignOfLineImage is required" })
+        }
+        const palmReaderData = await palmReaderModel.findOneAndUpdate({ _id: palmReaderId,isDeleted:false }, {
             heartLineReading,
             headLineReading,
             lifeLineReading,
             fateLineReading,
-            marriageLineReading
-        };
-        const palmReaderData = await palmReaderModel.findOneAndUpdate({ _id: palmReaderId,isDeleted:false }, palmReaderRequest, { new: true });
+            marriageLineReading,
+            DesignOfLineImage,
+            finalResult
+        }, { new: true });
+        if (!palmReaderData) {
+            return res.status(400).send({ msg: "palm id not found" });
+        }
         return res.status(200).send({ msg: "palmReader updated successfully", data: palmReaderData });
     } catch (err) {
         return res.status(500).send(err.message);
     }
-};
-
+}
 exports.deletePalmReaderById = async (req, res) => {
     try {
-        // const adminId = req.user.userId;
-        // const adminData = await adminModel.findOne({ _id: adminId });
-        // if (!adminData) {
-        //   return res.status(401).send({ message: "You are not authorized" });
-        // }
-        const palmReaderId = req.body.palmReaderId;
-        const palmReaderData = await palmReaderModel.findOneAndUpdate({ _id: palmReaderId,isDeleted:false }, { isDeleted: true, deletedAt: new Date() }, { new: true });
+    const checkPalm = await palmReaderModel.findOne({ _id: req.params.id, isDeleted: false });
+    if (checkPalm) {
+        const palmReaderData = await palmReaderModel.findOneAndUpdate({ _id: req.params.id, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
         return res.status(200).send({ msg: "palmReader deleted successfully", data: palmReaderData });
-    } catch (err) {
-        return res.status(500).send(err.message);
     }
+    else {
+        return res.status(400).send({ msg: "palmReader id not found" });
+    }
+} catch (err) {
+    return res.status(500).send(err.message);
+}
 }

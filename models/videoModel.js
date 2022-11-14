@@ -2,11 +2,11 @@ const mongoose = require("mongoose");
 
 const videoSchema = new mongoose.Schema(
     {
-        subAdmin: {
+        /*jyotish: {
             required: true,
              type: mongoose.Types.ObjectId,
-              ref: "admin" 
-            },
+              ref: "jyotish" 
+            },*/
         video: {
             type: String,
             required: true,

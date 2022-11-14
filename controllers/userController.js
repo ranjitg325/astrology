@@ -1,6 +1,7 @@
 const userModel = require("../models/userModel.js")
 const cardModel = require("../models/cardModel.js");
 const horoscopeModel = require("../models/horoscopeModel.js");
+const jyotisModel = require("../models/jyotisModel.js");
 const sheduleChatModel = require("../models/SheduleForChatModel");
 const emailValidator = require('validator')
 const transporter = require("../utils/sendMail");
@@ -511,6 +512,69 @@ exports.cancelMeeting = async (req, res) => {
         const { meetingId } = req.body;
         const meeting = await sheduleChatModel.findOneAndUpdate({ _id: meetingId, user:user }, { cancelMeeting: true });
         return res.status(200).send({ message: "meeting cancelled successfully", data : meeting });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//user can see the list of astrologer
+exports.getAstrologerList = async (req, res) => {
+    try {
+        const astrologer = await jyotisModel.find();
+        return res.status(200).send({ message: "astrologer list", data: astrologer });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//user can see their sheduled meeting list
+exports.getMeetingList = async (req, res) => {
+    try {
+        const user = req.user.userId
+        const meeting = await sheduleChatModel.find({ user: user });
+        return res.status(200).send({ message: "meeting list", data: meeting });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+//give rating to astrologer after chat
+exports.giveRating = async (req, res) => {
+    try {
+        const user = req.user.userId
+        const { meetingId, rating } = req.body;
+        const meeting = await sheduleChatModel.findOneAndUpdate({ _id: meetingId, user:user }, { rating: rating });
+        return res.status(200).send({ message: "rating given successfully", data : meeting });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//average rating of jyotish
+exports.updateRating = async (req, res) => {
+    try {
+        const jyotish = await jyotisModel.find({_id: req.body.jyotishId});
+        // for (let i = 0; i < jyotish.length; i++) {
+        //     const jyotishId = jyotish[i]._id;
+        //     const jyotishName = jyotish[i].jyotishName;
+            const sheduleChat = await sheduleChatModel.find({ jyotish: jyotish, rating: { $ne: null } });
+            let totalRating = 0;
+            for (let j = 0; j < sheduleChat.length; j++) {
+                totalRating = totalRating + sheduleChat[j].rating;
+            }
+            const averageRating = totalRating / sheduleChat.length;
+            const jyotishUpdate = await jyotisModel.findOneAndUpdate({ _id: req.body.jyotishId }, { rating: averageRating });
+        //}
+        return res.status(200).send({ message: "rating updated successfully", data : jyotish });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//get updated rating of jyotish
+exports.getRating = async (req, res) => {
+    try {
+        const jyotish = await jyotisModel.find({_id: req.body.jyotishId, isDeleted: false}).select({rating:1});
+        return res.status(200).send({ message: "rating of jyotish", data : jyotish });
     } catch (err) {
         return res.status(500).send(err.message);
     }

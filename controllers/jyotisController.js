@@ -132,7 +132,7 @@ exports.send_otp_phone = async (req, res) => {
         if(userMail.length == 10){
           var toPhone = "91".concat(userMail);
         }
-        const fromPhone = "Kuldeep Solutions";
+        const fromPhone = "rj Ranjit Solutions";
         console.log(fromPhone, toPhone, text);
         await vonage.message.sendSms(fromPhone, toPhone, text, (err, responseData) => {
           if (err) {
@@ -193,7 +193,7 @@ exports.send_otp_phone = async (req, res) => {
     //   .then((err)=>{
     //     if(err) throw err;
     //   }).catch(()=> console.log("OTP Matched"));
-      const payload = { userId: _id, email: userEmail,phone: userEmail };
+      const payload = { userId: _id, /*email: userEmail,*/phone: userEmail };
       const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
         expiresIn: "10080m",
       });

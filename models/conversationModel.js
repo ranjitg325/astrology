@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const conversationSchema = new mongoose.Schema(
   {
-    recipients: [{ type: mongoose.Types.ObjectId, ref: "admin" }],
+    recipients: [{ type: mongoose.Types.ObjectId, ref: "jyotish" }],
     text: String,
     media: Array,
     call: Object,

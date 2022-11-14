@@ -23,5 +23,15 @@ router.get('/getHoroscope',middleware.authenticateToken, userController.getHoros
 //cancel sheduled chat with the astrologer
 router.put('/cancelSheduledChat',middleware.authenticateToken, userController.cancelMeeting);
 
+//user can see their sheduled chat
+router.get('/getMeetingList',middleware.authenticateToken, userController.getMeetingList);
+
+//user will get the list of astrologers
+router.get('/getAstrologerList',middleware.authenticateToken, userController.getAstrologerList);
+
+//user will give rating to the jyotish after the chat
+router.post('/giveRating',middleware.authenticateToken, userController.giveRating);
+router.put('/updateRating',middleware.authenticateToken, userController.updateRating);
+router.get('/getRating',middleware.authenticateToken, userController.getRating);
 
 module.exports = router;

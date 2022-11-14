@@ -3,9 +3,9 @@
 const mongoose = require('mongoose')
 
 const sheduleSchema = new mongoose.Schema({
-    astrologer: {
+    jyotish: {
         type: mongoose.Types.ObjectId,
-        ref: "astrologer",
+        ref: "jyotish",
         required: true
     },
     user: {
@@ -31,6 +31,13 @@ const sheduleSchema = new mongoose.Schema({
     cancelMeeting: {  //if user cancel the meeting then it will be true
         type: Boolean,
         default: false
+    },
+    rating: {
+        type: Number,
+        //required:true,
+        min: 1,
+        max: 5,
+        default: null
     },
     isDeleted: {
         type: Boolean,

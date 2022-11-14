@@ -6,7 +6,7 @@ const aws = require('../aws/aws');
 exports.horoscopeCreate = async (req, res) => {
     try {
         let {
-            //subAdmin,
+            //jyotish,
             zodiacName,
             zodiacDescription,
             horoscopeType,
@@ -34,7 +34,7 @@ exports.horoscopeCreate = async (req, res) => {
             horoscopeDescription,
             horoscopeCreatedDate,
             horoscopeValidUpto,
-            subAdmin:req.user.adminId
+            //jyotish:req.user.userId
         });
         const horoscopeData = await newHoroscope.save();
         return res.status(200).send({ msg: "horoscope created successfully", data: horoscopeData });
@@ -52,7 +52,7 @@ exports.horoscopeCreate = async (req, res) => {
 //         }
       
 //         let {
-//             subAdmin,
+//             jyotish,
 //             zodiacName,
 //             zodiacImage,
 //             zodiacDescription,
@@ -63,7 +63,7 @@ exports.horoscopeCreate = async (req, res) => {
 //         } = req.body;
 
 //         const horoscopeRequest = {
-//             subAdmin,
+//             jyotish,
 //             zodiacName,
 //             zodiacImage,
 //             zodiacDescription,
@@ -83,10 +83,9 @@ exports.horoscopeCreate = async (req, res) => {
 
 exports.getAllHoroscopes = async (req, res) => {
     try {
-        //const adminId = req.user.adminId;
-        //const subAdmin = req.body.subAdmin;
-        const horoscopeCount = await horoscopeModel.find({/*subAdmin:subAdmin,*/ isDeleted: false }).count();
-        const horoscopeData = await horoscopeModel.find({/* subAdmin : subAdmin,*/isDeleted: false });
+        //const jyotish = req.user.userId;
+        const horoscopeCount = await horoscopeModel.find({/*jyotish:jyotish,*/ isDeleted: false }).count();
+        const horoscopeData = await horoscopeModel.find({/* jyotish : jyotish,*/isDeleted: false });
         return res.status(200).send({ msg: "horoscopes fetched successfully", count: horoscopeCount, data: horoscopeData });
     } catch (err) {
         return res.status(500).send(err.message);
@@ -94,9 +93,9 @@ exports.getAllHoroscopes = async (req, res) => {
 }
 exports.getAllHoroscopeOfOwn = async (req, res) => {
     try{
-        const subAdmin= req.user.adminId;
-        const horoscopeCount = await horoscopeModel.find({subAdmin:subAdmin, isDeleted: false }).count();
-        const horoscopeData = await horoscopeModel.find({ subAdmin : subAdmin,isDeleted: false });
+        //const jyotish= req.user.userId;
+        const horoscopeCount = await horoscopeModel.find({/*jyotish:jyotish,*/ isDeleted: false }).count();
+        const horoscopeData = await horoscopeModel.find({ /*jyotish : jyotish,*/isDeleted: false });
         return res.status(200).send({ msg: "horoscopes fetched successfully", count: horoscopeCount, data: horoscopeData });
     }catch(err){
         return res.status(500).send(err.message);
@@ -131,9 +130,9 @@ exports.updateHoroscope = async (req, res) => {
                 })
             );
         }
-        const subAdmin = req.user.adminId;
+        //const jyotish = req.user.userId;
         const updatedHoroscope = await horoscopeModel.findOneAndUpdate(
-            { _id: req.params.id, subAdmin: subAdmin },
+            { _id: req.params.id, /*jyotish: jyotish*/ },
             {
                 zodiacName,
                 zodiacImage,
@@ -157,11 +156,11 @@ exports.updateHoroscope = async (req, res) => {
 
 exports.deleteHoroscope = async (req, res) => {
     try {
-        const subAdmin = req.user.adminId;
-        const checkHoroscope = await horoscopeModel.findOne({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
+        //const jyotish = req.user.userId;
+        const checkHoroscope = await horoscopeModel.findOne({ _id: req.params.id, /*jyotish: jyotish,*/ isDeleted: false });
        if(checkHoroscope){
         const deletedHoroscope = await horoscopeModel.findOneAndUpdate(
-            { _id: req.params.id, subAdmin: subAdmin },
+            { _id: req.params.id, /*jyotish: jyotish*/ },
             { isDeleted: true, deletedAt: Date.now() },
             { new: true }
         );

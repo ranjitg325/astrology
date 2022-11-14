@@ -19,7 +19,7 @@ exports.createVideo = async (req, res) => {
             return res.status(400).send({ status: false, message: "video is required" })
         }
         const newReel = await new videoModel({
-            subAdmin: req.user.adminId,
+            //jyotish: req.user.userId,
             video: video,
             caption,
         });
@@ -42,12 +42,12 @@ exports.updateVideo = async (req, res) => {
         else {
             return res.status(400).send({ status: false, message: "video is required" })
         }
-        const subAdmin = req.user.adminId;
-        const checkVideo = await videoModel.find({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
+        //const jyotish = req.user.userId;
+        const checkVideo = await videoModel.find({ _id: req.params.id, /*jyotish: jyotish,*/ isDeleted: false });
         if(checkVideo){
             const updateVideo = await videoModel.findOneAndUpdate({
                 _id: req.params.id,
-                subAdmin: subAdmin,
+                //jyotish: jyotish,
                 isDeleted: false
             }, {
                 $set: {
@@ -79,9 +79,9 @@ exports.getAllVideos = async (req, res) => {
 
 exports.getallvideoOfOwn = async (req, res) => {
     try {
-        const subAdmin = req.user.adminId;
-        const videoCount = await videoModel.find({ subAdmin: subAdmin, isDeleted: false }).count();
-        const videoData = await videoModel.find({ subAdmin: subAdmin, isDeleted: false });
+        //const jyotish = req.user.userId;
+        const videoCount = await videoModel.find({ /*jyotish: jyotish,*/ isDeleted: false }).count();
+        const videoData = await videoModel.find({ /*jyotish: jyotish,*/ isDeleted: false });
         return res.status(200).send({ msg: "videos fetched successfully", count: videoCount, data: videoData });
     } catch (err) {
         return res.status(500).send(err.message);
@@ -90,10 +90,10 @@ exports.getallvideoOfOwn = async (req, res) => {
 
 exports.deleteVideo = async (req, res) => {
  try{
-    const subAdmin = req.user.adminId;
-    const checkVideo = await videoModel.find({ _id: req.params.id, subAdmin: subAdmin, isDeleted: false });
+    //const jyotish = req.user.userId;
+    const checkVideo = await videoModel.find({ _id: req.params.id, /*jyotish: jyotish,*/ isDeleted: false });
     if(checkVideo){
-        const deleteVideo = await videoModel.findOneAndUpdate({ _id:req.params.id,subAdmin: subAdmin,isDeleted: false},{ $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
+        const deleteVideo = await videoModel.findOneAndUpdate({ _id:req.params.id,/*jyotish: jyotish,*/isDeleted: false},{ $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
         return res.status(200).send({ msg: "video deleted successfully", data: deleteVideo });
     }
     else{

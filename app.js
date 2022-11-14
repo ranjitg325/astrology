@@ -25,6 +25,7 @@ const liveStream = require('./routes/liveStream.js');
 const sheaduleForChat = require('./routes/sheaduleForChat.js');
 const message = require('./routes/message.js');
 const jyotis = require('./routes/jyotis.js');
+const feedback = require('./routes/feedback.js');
 
 require('dotenv').config();
 // //const multer = require("multer")
@@ -58,6 +59,7 @@ app.use('/liveStream', liveStream);
 app.use('/sheduleForChat', sheaduleForChat);
 app.use('/message',message );
 app.use('/jyotis',jyotis );
+app.use('/feedback',feedback );
 
 
 
