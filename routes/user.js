@@ -15,10 +15,20 @@ router.delete('/deleteUser',middleware.authenticateToken, userController.deleteU
 
 // user can see their profile
 router.get('/getProfile',middleware.authenticateToken, userController.getOwnProfile);
-router.get('/getPrediction',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionType);
+
+// user can see their prediction by choosing card
+router.get('/getPredictionByCardToday',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionTypeToday);
+router.get('/getPredictionByCardTomorrow',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionTypeTomorrow);
+router.get('/getPredictionByCardWeekly',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionTypeWeekly);
+router.get('/getPredictionByCardMonthly',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionTypeMonthly);
+router.get('/getPredictionByCardYearly',middleware.authenticateToken, userController.getPredictionByCardTypeAndPredictionTypeYearly);
 
 //user can check their horoscope
-router.get('/getHoroscope',middleware.authenticateToken, userController.getHoroscopeByType);
+router.get('/getHoroscopeByTypeToday',middleware.authenticateToken, userController.getHoroscopeByTypeToday);  
+router.get('/getHoroscopeByTypeTomorrow',middleware.authenticateToken, userController.getHoroscopeByTypeTomorrow); 
+router.get('/getHoroscopeByTypeWeekly',middleware.authenticateToken, userController.getHoroscopeByTypeWeekly); 
+router.get('/getHoroscopeByTypeMonthly',middleware.authenticateToken, userController.getHoroscopeByTypeMonthly); 
+router.get('/getHoroscopeByTypeYearly',middleware.authenticateToken, userController.getHoroscopeByTypeYearly); 
 
 //cancel sheduled chat with the astrologer
 router.put('/cancelSheduledChat',middleware.authenticateToken, userController.cancelMeeting);

@@ -15,6 +15,7 @@ router.put('/updateJyotis',middleware.authenticateToken, jyotisController.update
 router.delete('/deleteJyotis',middleware.authenticateToken, jyotisController.deleteJyotis);
 router.get('/getProfile',middleware.authenticateToken, jyotisController.getOwnProfile);
 
-
+//update the availability of the astrologer
+router.put('/updateAvailability',middleware.authenticateToken, jyotisController.updateAvailability);
 
 module.exports=router;

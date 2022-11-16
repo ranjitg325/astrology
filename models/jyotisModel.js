@@ -69,7 +69,26 @@ const jyotisSchema = new mongoose.Schema(
             type: String,
             //required:true,  
         },
+        //jyotish will give availableDates and availableTimeSlot, so that user can book an appointment
+        availableDates: {
+            //using get date function we write date in postman
+            type: Array,
+        },
 
+
+        availableStartTime: {
+            type: Array,
+            //required:true,
+            //trim: true,
+        },
+        availableEndTime: {
+            type: Array,
+            //required:true,
+            //trim: true,
+        },
+
+      
+      
         mail_otp: {         //when a user login after registration, he will be asked to verify his email address
             type: String,
             unique: true,

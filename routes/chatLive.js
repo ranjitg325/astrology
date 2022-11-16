@@ -1,3 +1,9 @@
+//for this chat function check the message.js file in routes folder
+
+
+
+
+
 // const express = require('express');
 // const router = express.Router();
 // const chatLiveController = require('../controllers/chatLive');

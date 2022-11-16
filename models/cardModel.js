@@ -24,7 +24,7 @@ const cardSchema = new mongoose.Schema({
     },
    
     cardType: {
-        type: String, enum: ['todaysCard', 'weeklyCard', 'monthlyCard', 'yearlyCard'],
+        type: String, enum: ['todaysCard','tomorrowsCard', 'weeklyCard', 'monthlyCard', 'yearlyCard'],
         required: true,
         trim: true
     },

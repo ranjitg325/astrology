@@ -6,9 +6,6 @@ const cardModel = require("../models/cardModel")
 const videoModel = require("../models/videoModel")
 const aws = require("../aws/aws");
 
-
-
-//shedule a chat for user to astrologer if astrologer time slot is available
 exports.sheduleChat = async (req, res) => {
     try {
         let { jyotishId, date, time } = req.body;
@@ -27,16 +24,31 @@ exports.sheduleChat = async (req, res) => {
         if (shedule) {
             return res.status(400).json({ message: "astrologer time slot is already booked" });
         }
+       
+        const availableDates = jyotish.availableDates;
+        const availableStartTime = jyotish.availableStartTime;
+        const availableEndTime = jyotish.availableEndTime;
+        const startTime = new Date(availableStartTime);
+        const endTime = new Date(availableEndTime);
+        const sheduleTime = new Date(time);
+        
+        if (!availableDates.includes(date)) {
+            return res.status(400).json({ message: "astrologer is not available on this date" });
+        }
+        if (sheduleTime < startTime || sheduleTime > endTime) {
+            return res.status(400).json({ message: "astrologer is not available at this time" });
+        }
+
         const newShedule = new sheduleModel({
             jyotish: jyotishId,
             user: req.user.userId,
-            date: date,  
+            date: date,
             time: time
         });
         const sheduleData = await newShedule.save();
-        return res.status(201).send({ message: "shedule created successfully", data: sheduleData });
+        return res.status(200).json({ message: "shedule created successfully", data: sheduleData });
     } catch (err) {
-        return res.status(500).send(err.message);
+        return res.status(500).json(err.message);
     }
 }
 
@@ -58,4 +70,4 @@ exports.sheduleChat = async (req, res) => {
         }
  }
 
- 
+

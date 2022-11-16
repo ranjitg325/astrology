@@ -1,11 +1,11 @@
 const mongoose = require('mongoose')
 
 const horoscopeSchema = new mongoose.Schema({
-    jyotish:{
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: 'jyotish'
-    },
+    // jyotish:{
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     required: true,
+    //     ref: 'jyotish'
+    // },
     zodiacName: {    
         type: String,
         enum: ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"],
@@ -24,7 +24,7 @@ const horoscopeSchema = new mongoose.Schema({
     },
     horoscopeType: {
         type: String,
-        enum : ['today','weekly','monthly','yearly'],
+        enum : ['today','tomorrow','weekly','monthly','yearly'],
         required: true,
         trim: true
     },
@@ -34,19 +34,20 @@ const horoscopeSchema = new mongoose.Schema({
         trim: true
     },
     //horoscope created date and horoscope valid upto date
-    horoscopeCreatedDate: {
-        type: Date,
-        //required: true,
-        default: Date.now,
-        trim: true
-    },
+    // horoscopeCreatedDate: {
+    //     type: Date,
+    //     //required: true,
+    //     default: Date.now,
+    //     trim: true
+    // },
+    
     //horoscope valid upto today, weekly, monthly, yearly is 1 day, 7 days, 30 days, 365 days inside the enum
-    horoscopeValidUpto: {  //date ek din minus hoke save ho raha hai
-     // horoscope valid upto midnight 11:59:59
-        type: Date,
-        //required: true,
-        trim: true
-    },
+    // horoscopeValidUpto: {  //date ek din minus hoke save ho raha hai
+    //  // horoscope valid upto midnight 11:59:59
+    //     type: Date,
+    //     //required: true,
+    //     trim: true
+    // },
     
     // horoscopeValidUptoDate: {
     //     type: Date,
@@ -58,27 +59,7 @@ const horoscopeSchema = new mongoose.Schema({
     //     type: Date,
     //     default: Date.now
     // },
-        
-    // todaysHoroscope: {
-    //     type: String,
-    //     // required: true,
-    //      trim: true
-    // },
-    // weeklyHoroscope: {
-    //     type: String,
-    //     //required: true,
-    //     trim: true
-    // },
-    // monthlyHoroscope: {
-    //     type: String,
-    //     //required: true,
-    //     trim: true
-    // },
-    // yearlyHoroscope: {
-    //     type: String,
-    //     //required: true,
-    //     trim: true
-    // },
+   
     isDeleted: {
         type: Boolean,
         default: false

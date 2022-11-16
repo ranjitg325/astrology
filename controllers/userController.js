@@ -399,9 +399,69 @@ exports.getOwnProfile = async (req, res) => {
 }
 
 //from card model
-exports.getPredictionByCardTypeAndPredictionType = async (req, res) => {
+// exports.getPredictionByCardTypeAndPredictionType = async (req, res) => {
+//     try {
+//         if(req.body.cardType == "todaysCard"){
+//         const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+//         const prediction = await cardModel.find({
+//             zodiacName: zodiacName, cardType: cardType,
+//             predictionTypeAndDescription:
+//             {
+//                 $elemMatch: { predictionType: predictionTypeAndDescription }
+//             },
+//             //show the data only created at after 12:00 am
+//             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
+//         });
+//         return res.status(200).send({ message: "prediction details", data: prediction });
+//         }
+//         else if(req.body.cardType == "weeklyCard"){
+//             const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+//             const prediction = await cardModel.find({
+//                 zodiacName: zodiacName, cardType: cardType,
+//                 predictionTypeAndDescription:
+//                 {
+//                     $elemMatch: { predictionType: predictionTypeAndDescription }
+//                 },
+//                 //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
+//                 createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
+                
+//             });
+//             return res.status(200).send({ message: "prediction details", data: prediction });
+//             }
+//             else if(req.body.cardType == "monthlyCard"){
+//                 const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+//                 const prediction = await cardModel.find({
+//                     zodiacName: zodiacName, cardType: cardType,
+//                     predictionTypeAndDescription:
+//                     {
+//                         $elemMatch: { predictionType: predictionTypeAndDescription }
+//                     },
+//                     //if the user want to see monthly data then fetch the data creates after 12:00 am on any 1st of the month and every new month of 1st dont show the last month data
+//                     createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
+//                 });
+//                 return res.status(200).send({ message: "prediction details", data: prediction });
+//                 }
+//                 else if(req.body.cardType == "yearlyCard"){
+//                     const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+//                     const prediction = await cardModel.find({
+//                         zodiacName: zodiacName, cardType: cardType,
+//                         predictionTypeAndDescription:
+//                         {
+//                             $elemMatch: { predictionType: predictionTypeAndDescription }
+//                         },
+//                        //if the user want to see yearly data then fetch the data creates after 12:00 am on any 1st of the january and every new year of 1st january dont show the last year data
+//                         createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0).setDate(1) }
+//                     });
+//                     return res.status(200).send({ message: "prediction details", data: prediction });
+//                     }
+             
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     }
+// }
+
+exports.getPredictionByCardTypeAndPredictionTypeToday = async (req, res) => {
     try {
-        if(req.body.cardType == "todaysCard"){
         const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
         const prediction = await cardModel.find({
             zodiacName: zodiacName, cardType: cardType,
@@ -413,97 +473,90 @@ exports.getPredictionByCardTypeAndPredictionType = async (req, res) => {
             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
-        }
-        else if(req.body.cardType == "weeklyCard"){
-            const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
-            const prediction = await cardModel.find({
-                zodiacName: zodiacName, cardType: cardType,
-                predictionTypeAndDescription:
-                {
-                    $elemMatch: { predictionType: predictionTypeAndDescription }
-                },
-                //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
-                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
-                
-            });
-            return res.status(200).send({ message: "prediction details", data: prediction });
-            }
-            else if(req.body.cardType == "monthlyCard"){
-                const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
-                const prediction = await cardModel.find({
-                    zodiacName: zodiacName, cardType: cardType,
-                    predictionTypeAndDescription:
-                    {
-                        $elemMatch: { predictionType: predictionTypeAndDescription }
-                    },
-                    //if the user want to see monthly data then fetch the data creates after 12:00 am on any 1st of the month and every new month of 1st dont show the last month data
-                    createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
-                });
-                return res.status(200).send({ message: "prediction details", data: prediction });
-                }
-                else if(req.body.cardType == "yearlyCard"){
-                    const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
-                    const prediction = await cardModel.find({
-                        zodiacName: zodiacName, cardType: cardType,
-                        predictionTypeAndDescription:
-                        {
-                            $elemMatch: { predictionType: predictionTypeAndDescription }
-                        },
-                       //if the user want to see yearly data then fetch the data creates after 12:00 am on any 1st of the january and every new year of 1st january dont show the last year data
-                        createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0).setDate(1) }
-                    });
-                    return res.status(200).send({ message: "prediction details", data: prediction });
-                    }
-             
     } catch (err) {
         return res.status(500).send(err.message);
     }
 }
 
-
-//from horoscope model
-exports.getHoroscopeByType = async (req, res) => {
+exports.getPredictionByCardTypeAndPredictionTypeTomorrow = async (req, res) => {
     try {
-        if (req.body.horoscopeType == "today") {
-            const { zodiacName, horoscopeType } = req.body;
-            const horoscope = await horoscopeModel.find({
-                zodiacName: zodiacName, horoscopeType: horoscopeType,
-                //show the data only created at after 12:00 am
-                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
-            });
-            return res.status(200).send({ message: "horoscope details", data: horoscope });
-        }
-        else if (req.body.horoscopeType == "weekly") {
-            const { zodiacName, horoscopeType } = req.body;
-            const horoscope = await horoscopeModel.find({
-                zodiacName: zodiacName, horoscopeType: horoscopeType,
-                //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
-                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
-            });
-            return res.status(200).send({ message: "horoscope details", data: horoscope });
-        }
-        else if (req.body.horoscopeType == "monthly") {
-            const { zodiacName, horoscopeType } = req.body;
-            const horoscope = await horoscopeModel.find({
-                zodiacName: zodiacName, horoscopeType: horoscopeType,
-                //if the user want to see monthly data then fetch the data creates after 12:00 am on any 1st of the month and every new month of 1st dont show the last month data
-                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
-            });
-            return res.status(200).send({ message: "horoscope details", data: horoscope });
-        }
-        else if (req.body.horoscopeType == "yearly") {
-            const { zodiacName, horoscopeType } = req.body;
-            const horoscope = await horoscopeModel.find({
-                zodiacName: zodiacName, horoscopeType: horoscopeType,
-                //if the user want to see yearly data then fetch the data creates after 12:00 am on any 1st of the january and every new year of 1st january dont show the last year data
-                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0).setDate(1) }
-            });
-            return res.status(200).send({ message: "horoscope details", data: horoscope });
-        }
+        const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+        const prediction = await cardModel.find({
+            zodiacName: zodiacName, cardType: cardType,
+            predictionTypeAndDescription:
+            {
+                $elemMatch: { predictionType: predictionTypeAndDescription }
+            },
+            //show the data only created at after 12:00 am
+            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() + 1) }
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
+        });
+        return res.status(200).send({ message: "prediction details", data: prediction });
     } catch (err) {
         return res.status(500).send(err.message);
     }
 }
+
+exports.getPredictionByCardTypeAndPredictionTypeWeekly = async (req, res) => {
+    try {
+        const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+        const prediction = await cardModel.find({
+            zodiacName: zodiacName, cardType: cardType,
+            predictionTypeAndDescription:
+            {
+                $elemMatch: { predictionType: predictionTypeAndDescription }
+            },
+            //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
+            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date().getDate() - new Date().getDay() + 1) }
+        });
+        return res.status(200).send({ message: "prediction details", data: prediction });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+exports.getPredictionByCardTypeAndPredictionTypeMonthly = async (req, res) => {
+    try {
+        const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+        const prediction = await cardModel.find({
+            zodiacName: zodiacName, cardType: cardType,
+            predictionTypeAndDescription:
+            {
+                $elemMatch: { predictionType: predictionTypeAndDescription }
+            },
+            //if the user want to see monthly data then fetch the data creates after 12:00 am on any 1st of the month and every new month of 1st dont show the last month data
+            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
+        });
+        return res.status(200).send({ message: "prediction details", data: prediction });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+exports.getPredictionByCardTypeAndPredictionTypeYearly = async (req, res) => {
+    try {
+        const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
+        const prediction = await cardModel.find({
+            zodiacName: zodiacName, cardType: cardType,
+            predictionTypeAndDescription:
+            {
+                $elemMatch: { predictionType: predictionTypeAndDescription }
+            },
+           //if the user want to see yearly data then fetch the data creates after 12:00 am on any 1st of the january and every new year of 1st january dont show the last year data
+            // createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0).setDate(1) }
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
+        });
+        return res.status(200).send({ message: "prediction details", data: prediction });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+
+
+// 
 
 //cancel sheduled meeting with astrologer by user
 exports.cancelMeeting = async (req, res) => {
@@ -579,3 +632,78 @@ exports.getRating = async (req, res) => {
         return res.status(500).send(err.message);
     }
 }
+
+
+//from horoscope model
+//get todays horoscope when user serch for todays horoscope and dont show the horoscope which is created before 12:00 am
+exports.getHoroscopeByTypeToday = async (req, res) => {
+        try {
+            const { zodiacName, horoscopeType } = req.body;
+            const horoscope = await horoscopeModel.find({
+                zodiacName: zodiacName, horoscopeType: horoscopeType,
+                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
+            });
+            return res.status(200).send({ message: "horoscope details", data: horoscope });
+        } catch (err) {
+            return res.status(500).send(err.message);
+        }
+    }
+
+//get tomorrows horoscope when user serch for tomorrows horoscope , it means astrolger created today for tomorrow
+exports.getHoroscopeByTypeTomorrow = async (req, res) => {
+    try {
+        const { zodiacName, horoscopeType } = req.body;
+        const horoscope = await horoscopeModel.find({
+            zodiacName: zodiacName, horoscopeType: horoscopeType,
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
+
+        });
+        return res.status(200).send({ message: "horoscope details", data: horoscope });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//get weekly horoscope when user serch for weekly horoscope and dont show the horoscope which is created before 12:00 am on any monday and every new week of monday dont show the last week data
+exports.getHoroscopeByTypeWeekly = async (req, res) => {
+    try {
+        const { zodiacName, horoscopeType } = req.body;
+        const horoscope = await horoscopeModel.find({
+            zodiacName: zodiacName, horoscopeType: horoscopeType,   
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date().getDate() - new Date().getDay() + 1) }
+        });
+        return res.status(200).send({ message: "horoscope details", data: horoscope });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//get monthly horoscope when user serch for monthly horoscope and dont show the horoscope which is created before 12:00 am on any 1st of month and every new month of 1st dont show the last month data
+exports.getHoroscopeByTypeMonthly = async (req, res) => {
+    try {
+        const { zodiacName, horoscopeType } = req.body;
+        const horoscope = await horoscopeModel.find({
+            zodiacName: zodiacName, horoscopeType: horoscopeType,
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
+        });
+        return res.status(200).send({ message: "horoscope details", data: horoscope });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+
+//get yearly horoscope when user serch for yearly horoscope and dont show the horoscope which is created before 12:00 am on any 1st of january and every new year of 1st january dont show the last year data
+exports.getHoroscopeByTypeYearly = async (req, res) => {
+    try {
+        const { zodiacName, horoscopeType } = req.body;
+        const horoscope = await horoscopeModel.find({
+            zodiacName: zodiacName, horoscopeType: horoscopeType,
+            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0) +1 }
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
+        });
+        return res.status(200).send({ message: "horoscope details", data: horoscope });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+}
+

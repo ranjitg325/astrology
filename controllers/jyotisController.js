@@ -351,3 +351,32 @@ exports.getOwnProfile = async (req, res) => {
         return res.status(500).send(err.message);
     }
 }
+
+
+ //astrolger can update his date and time slot daily
+ exports.updateAvailability = async (req, res) => {
+    try {
+        const userId = req.body.jyotishId;
+        let {
+            availableDates,
+            availableStartTime,
+            availableEndTime
+        } = req.body;
+        const jyotisData = await jyotisModel.findOne ({ _id: userId });
+        if (jyotisData.isDeleted == true) {
+            return res.status(400).send({ message: "user is not registered, register first" });
+        }
+        const updatedData = await jyotisModel.findOneAndUpdate(
+            { _id: userId, isDeleted: false },
+            {
+                availableDates: availableDates || jyotisData.availableDates,
+                availableStartTime: availableStartTime || jyotisData.availableStartTime,
+                availableEndTime: availableEndTime || jyotisData.availableEndTime
+            },
+            { new: true }
+        );
+        return res.status(200).send({ message: "user updated successfully", data :updatedData });
+    } catch (err) {
+        return res.status(500).send(err.message);
+    }
+};

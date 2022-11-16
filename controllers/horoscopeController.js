@@ -11,8 +11,8 @@ exports.horoscopeCreate = async (req, res) => {
             zodiacDescription,
             horoscopeType,
             horoscopeDescription,
-            horoscopeCreatedDate,
-            horoscopeValidUpto
+            // horoscopeCreatedDate,
+            // horoscopeValidUpto
         } = req.body;
         let zodiacImage = req.files;
         if( !zodiacName || !zodiacDescription || !horoscopeType || !horoscopeDescription || !horoscopeValidUpto){
@@ -32,8 +32,8 @@ exports.horoscopeCreate = async (req, res) => {
             zodiacDescription,
             horoscopeType,
             horoscopeDescription,
-            horoscopeCreatedDate,
-            horoscopeValidUpto,
+            // horoscopeCreatedDate,
+            // horoscopeValidUpto,
             //jyotish:req.user.userId
         });
         const horoscopeData = await newHoroscope.save();
@@ -118,8 +118,8 @@ exports.updateHoroscope = async (req, res) => {
             zodiacDescription,
             horoscopeType,
             horoscopeDescription,
-            horoscopeCreatedDate,
-            horoscopeValidUpto
+            // horoscopeCreatedDate,
+            // horoscopeValidUpto
         } = req.body;
         let zodiacImage = req.files;
         
@@ -139,8 +139,8 @@ exports.updateHoroscope = async (req, res) => {
                 zodiacDescription,
                 horoscopeType,
                 horoscopeDescription,
-                horoscopeCreatedDate,
-                horoscopeValidUpto,
+                //horoscopeCreatedDate,
+                //horoscopeValidUpto,
             },
             { new: true }
         );
