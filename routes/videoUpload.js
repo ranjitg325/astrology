@@ -3,9 +3,7 @@ const router = express.Router();
 const videoUploadController = require('../controllers/videoUpload');
 const middleware = require("../middleware/authenticateUser");
 
-//const reelController = require('../controllers/reelsController');
 
-//router.post('/userCreate', userController.user_signup);
 router.post('/uploadVideo',middleware.authenticateToken, videoUploadController.createVideo);
 router.put('/updateVideo/:id',middleware.authenticateToken, videoUploadController.updateVideo); 
 router.get('/getAllVideos',middleware.authenticateToken, videoUploadController.getAllVideos);

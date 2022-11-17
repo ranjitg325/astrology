@@ -5,15 +5,12 @@ const AWS = require("aws-sdk");
 let multer = require("multer");
 
 const bucketName = process.env.BUCKET
-//const bucketName = "...."
+
 
 const awsConfig = {
     accessKeyId: process.env.ACCESS_KEY,
     secretAccessKey: process.env.ACCESS_SECRET,
     region: process.env.REGION
-    // accessKeyId: "...",
-    //     secretAccessKey: "...",
-    //     region: "..."
 };
 
 const S3 = new AWS.S3(awsConfig);

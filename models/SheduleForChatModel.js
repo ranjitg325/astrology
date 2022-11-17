@@ -1,4 +1,3 @@
-//fix a time by user when he/she want to chat with astrologer
 
 const mongoose = require('mongoose')
 
@@ -21,7 +20,7 @@ const sheduleSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    //if astologer accept the request then it will be true
+    //if astologer accept the request then it will be accepted
     isAccepted: {
         type: String,
         enum : ['pending','accepted','rejected'],

@@ -24,19 +24,15 @@ exports.sheduleChat = async (req, res) => {
         if (shedule) {
             return res.status(400).json({ message: "astrologer time slot is already booked" });
         }
-       
+
+        //user can book slot only when the astrolger is set his availableDates,availableStartTime and availableEndTime is matching with the user selected date and time of user
         const availableDates = jyotish.availableDates;
         const availableStartTime = jyotish.availableStartTime;
         const availableEndTime = jyotish.availableEndTime;
-        const startTime = new Date(availableStartTime);
-        const endTime = new Date(availableEndTime);
-        const sheduleTime = new Date(time);
-        
-        if (!availableDates.includes(date)) {
-            return res.status(400).json({ message: "astrologer is not available on this date" });
-        }
-        if (sheduleTime < startTime || sheduleTime > endTime) {
-            return res.status(400).json({ message: "astrologer is not available at this time" });
+        const isDateAvailable = availableDates.includes(date);
+        const isTimeAvailable = (time >= availableStartTime && time <= availableEndTime);
+        if (!isDateAvailable || !isTimeAvailable) {
+            return res.status(400).json({ message: "astrologer is not available on this date and time" });
         }
 
         const newShedule = new sheduleModel({
@@ -46,11 +42,12 @@ exports.sheduleChat = async (req, res) => {
             time: time
         });
         const sheduleData = await newShedule.save();
-        return res.status(200).json({ message: "shedule created successfully", data: sheduleData });
+        return res.status(201).send({ message: "shedule created successfully", data: sheduleData });
     } catch (err) {
-        return res.status(500).json(err.message);
+        return res.status(500).send(err.message);
     }
 }
+       
 
  exports.acceptMeeting = async (req, res) => {
         try {

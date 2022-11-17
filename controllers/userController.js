@@ -460,6 +460,7 @@ exports.getOwnProfile = async (req, res) => {
 //     }
 // }
 
+//from card model
 exports.getPredictionByCardTypeAndPredictionTypeToday = async (req, res) => {
     try {
         const { zodiacName, cardType, predictionTypeAndDescription } = req.body;
@@ -487,8 +488,7 @@ exports.getPredictionByCardTypeAndPredictionTypeTomorrow = async (req, res) => {
             {
                 $elemMatch: { predictionType: predictionTypeAndDescription }
             },
-            //show the data only created at after 12:00 am
-            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() + 1) }
+            //show the data only created at after 12:00 am for tomorrow prediction
             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
@@ -506,8 +506,7 @@ exports.getPredictionByCardTypeAndPredictionTypeWeekly = async (req, res) => {
             {
                 $elemMatch: { predictionType: predictionTypeAndDescription }
             },
-            //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
-            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
+           //the user can see the weekly data that created on monday and valid upto sunday midnight, then after again astrologer have to create another weekly data
             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date().getDate() - new Date().getDay() + 1) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
@@ -525,8 +524,7 @@ exports.getPredictionByCardTypeAndPredictionTypeMonthly = async (req, res) => {
             {
                 $elemMatch: { predictionType: predictionTypeAndDescription }
             },
-            //if the user want to see monthly data then fetch the data creates after 12:00 am on any 1st of the month and every new month of 1st dont show the last month data
-            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
+            //the user can see the monthly data that created on 1st of the month and valid upto 31st of the month, then after again astrologer have to create another monthly data
             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(1) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
@@ -544,9 +542,8 @@ exports.getPredictionByCardTypeAndPredictionTypeYearly = async (req, res) => {
             {
                 $elemMatch: { predictionType: predictionTypeAndDescription }
             },
-           //if the user want to see yearly data then fetch the data creates after 12:00 am on any 1st of the january and every new year of 1st january dont show the last year data
-            // createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0).setDate(1) }
-            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
+          // the user can see the yearly data that created on 1st january and valid upto 31st december, then after again astrologer have to create another yearly data
+            createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
     } catch (err) {
@@ -555,8 +552,6 @@ exports.getPredictionByCardTypeAndPredictionTypeYearly = async (req, res) => {
 }
 
 
-
-// 
 
 //cancel sheduled meeting with astrologer by user
 exports.cancelMeeting = async (req, res) => {
@@ -635,7 +630,7 @@ exports.getRating = async (req, res) => {
 
 
 //from horoscope model
-//get todays horoscope when user serch for todays horoscope and dont show the horoscope which is created before 12:00 am
+//user will see today's horoscope , which is created by astrologer on the same day
 exports.getHoroscopeByTypeToday = async (req, res) => {
         try {
             const { zodiacName, horoscopeType } = req.body;
@@ -649,7 +644,7 @@ exports.getHoroscopeByTypeToday = async (req, res) => {
         }
     }
 
-//get tomorrows horoscope when user serch for tomorrows horoscope , it means astrolger created today for tomorrow
+//user will see weekly horoscope , which is created by astrologer on the same day   
 exports.getHoroscopeByTypeTomorrow = async (req, res) => {
     try {
         const { zodiacName, horoscopeType } = req.body;
@@ -664,7 +659,8 @@ exports.getHoroscopeByTypeTomorrow = async (req, res) => {
     }
 }
 
-//get weekly horoscope when user serch for weekly horoscope and dont show the horoscope which is created before 12:00 am on any monday and every new week of monday dont show the last week data
+//the user can see the weekly data that created on monday and valid upto sunday midnight, then after again astrologer have to create another weekly data
+          
 exports.getHoroscopeByTypeWeekly = async (req, res) => {
     try {
         const { zodiacName, horoscopeType } = req.body;
@@ -678,7 +674,7 @@ exports.getHoroscopeByTypeWeekly = async (req, res) => {
     }
 }
 
-//get monthly horoscope when user serch for monthly horoscope and dont show the horoscope which is created before 12:00 am on any 1st of month and every new month of 1st dont show the last month data
+//the user can see the monthly data that created on 1st of every month and valid upto 31st of every month
 exports.getHoroscopeByTypeMonthly = async (req, res) => {
     try {
         const { zodiacName, horoscopeType } = req.body;
@@ -692,14 +688,14 @@ exports.getHoroscopeByTypeMonthly = async (req, res) => {
     }
 }
 
-//get yearly horoscope when user serch for yearly horoscope and dont show the horoscope which is created before 12:00 am on any 1st of january and every new year of 1st january dont show the last year data
+//the user can see the yearly data that created on 1st january of every year and valid upto 31st december of every year
 exports.getHoroscopeByTypeYearly = async (req, res) => {
     try {
         const { zodiacName, horoscopeType } = req.body;
         const horoscope = await horoscopeModel.find({
             zodiacName: zodiacName, horoscopeType: horoscopeType,
-            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0) +1 }
-            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
+             //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
+            createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) }
         });
         return res.status(200).send({ message: "horoscope details", data: horoscope });
     } catch (err) {

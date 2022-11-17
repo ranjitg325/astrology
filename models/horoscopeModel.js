@@ -33,32 +33,7 @@ const horoscopeSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    //horoscope created date and horoscope valid upto date
-    // horoscopeCreatedDate: {
-    //     type: Date,
-    //     //required: true,
-    //     default: Date.now,
-    //     trim: true
-    // },
-    
-    //horoscope valid upto today, weekly, monthly, yearly is 1 day, 7 days, 30 days, 365 days inside the enum
-    // horoscopeValidUpto: {  //date ek din minus hoke save ho raha hai
-    //  // horoscope valid upto midnight 11:59:59
-    //     type: Date,
-    //     //required: true,
-    //     trim: true
-    // },
-    
-    // horoscopeValidUptoDate: {
-    //     type: Date,
-    //     required: true,
-    //     trim: true
-    // },
-
-    // horoscopeDate: {
-    //     type: Date,
-    //     default: Date.now
-    // },
+   
    
     isDeleted: {
         type: Boolean,

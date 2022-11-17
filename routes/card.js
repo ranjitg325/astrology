@@ -5,7 +5,7 @@ const middleware = require("../middleware/authenticateUser");
 
 
 router.post('/cardCreate', middleware.authenticateToken,cardController.cardCreate);
-router.get('/getCardByType', middleware.authenticateToken,cardController.getCardByType);  //today,weekly,monthly,yearly
+router.get('/getCardByType', middleware.authenticateToken,cardController.getCardByType);  //today,tomorrow,weekly,monthly,yearly
 router.get('/getAllCardsOfOwn', middleware.authenticateToken,cardController.getAllCardsOfOwn);
 router.get('/getAllCards', middleware.authenticateToken,cardController.getAllCards);
 //router.get('/getCardById',/* middleware.authenticateToken,*/cardController.getCardById);

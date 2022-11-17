@@ -7,11 +7,7 @@ exports.createVideo = async (req, res) => {
     try {
         const { caption } = req.body;
         let video = req.files;
-        // const user = await adminModel.findById(req.user.adminId);
-        // if (!user) {
-        //     return res.status(400).json({  msg: 'Admin not found' });
-        // }
-        //const reel = await aws.upload(video);
+        
         if (video && video.length > 0) {
             video = await aws.uploadFile(video[0]);
         }

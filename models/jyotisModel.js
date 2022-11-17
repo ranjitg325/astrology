@@ -71,11 +71,8 @@ const jyotisSchema = new mongoose.Schema(
         },
         //jyotish will give availableDates and availableTimeSlot, so that user can book an appointment
         availableDates: {
-            //using get date function we write date in postman
             type: Array,
         },
-
-
         availableStartTime: {
             type: Array,
             //required:true,

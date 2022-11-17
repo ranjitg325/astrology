@@ -169,7 +169,7 @@ exports.deleteHoroscope = async (req, res) => {
          else{
             return res.status(400).send({msg:"horoscope not found"});
         }
-       // return res.status(200).send({ msg: "horoscope deleted successfully", data: deletedHoroscope });
+     
     } catch (err) {
         return res.status(500).send(err.message);
     }
