@@ -8,9 +8,9 @@ const middleware = require("../middleware/authenticateUser");
 router.post('/signup',adminController.admin_signup);
 router.post('/email_otp',adminController.send_otp_toEmail);
 router.post('/login',adminController.login);
-router.get('/logout', adminController.logout);
-router.post('/forgotPassword', adminController.forgotPassword); //not tested
-router.post('/updatePassword', adminController.updatePassword); //not tested //after otp verification(forgot password) user can change their password
+router.post('/logout',middleware.authenticateToken, adminController.logout);
+router.post('/forgotPassword', adminController.forgotPassword); 
+router.post('/updatePassword', adminController.updatePassword); //after otp verification(forgot password) user can change their password
 
 router.put('/update',middleware.authenticateToken,adminController.admin_update);
 router.get('/getAdminById',middleware.authenticateToken,adminController.getAdminById);

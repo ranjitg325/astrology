@@ -139,13 +139,23 @@ exports.login = async (req, res) => {
 //     };
 // }
 
-exports.logout = async (req, res) => {    //not working test again later
+// exports.logout = async (req, res) => {    //not working test again later
+//     try {
+//         res.redirect("/user/login");
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     }
+// }
+
+exports.logout = async (req, res) => {
     try {
-        res.redirect("/user/login");
+      res.clearCookie("jwt");
+      res.status(200).send("admin Logout");
     } catch (err) {
-        return res.status(500).send(err.message);
+      return res.status(500).send(err.message);
     }
-}
+  }
+
 
 exports.forgotPassword = async (req, res) => {
     try {

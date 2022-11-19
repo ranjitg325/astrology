@@ -209,13 +209,22 @@ exports.send_otp_phone = async (req, res) => {
     }
   };
 
-  exports.logout = async (req, res) => {    //not working test again later
+//   exports.logout = async (req, res) => {    //not working test again later
+//     try {
+//         res.redirect("/jyotis/login");
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     }
+// }
+
+exports.logout = async (req, res) => {
     try {
-        res.redirect("/user/login");
+      res.clearCookie("jwt");
+      res.status(200).send("User Logout");
     } catch (err) {
-        return res.status(500).send(err.message);
+      return res.status(500).send(err.message);
     }
-}
+  }
 
 exports.forgotPassword = async (req, res) => {
     try {

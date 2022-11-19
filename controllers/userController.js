@@ -183,7 +183,7 @@ exports.send_otp_toPhone = async (req, res) => {
 //     }
 // };
 
-exports.login = async (req, res) => {  //not working
+exports.login = async (req, res) => {  
     try {
       const userEmail = req.body.email||req.body.phone;
       let userOtp = req.body.otp;
@@ -223,13 +223,24 @@ exports.login = async (req, res) => {  //not working
     }
   };
 
-exports.logout = async (req, res) => {    //not working test again later
+// exports.logout = async (req, res) => {
+// try{
+//   req.session = null;
+//   res.redirect(200, '/user/login');
+// }
+// catch (err) {
+//     return res.status(500).send(err.message);
+// }
+// }
+
+exports.logout = async (req, res) => {
     try {
-        res.redirect("/user/login");
+      res.clearCookie("jwt");
+      res.status(200).send("User Logout");
     } catch (err) {
-        return res.status(500).send(err.message);
+      return res.status(500).send(err.message);
     }
-}
+  }
 
 exports.forgotPassword = async (req, res) => {
     try {
