@@ -4,6 +4,7 @@ const horoscopeModel = require("../models/horoscopeModel.js");
 const jyotisModel = require("../models/jyotisModel.js");
 const sheduleChatModel = require("../models/SheduleForChatModel");
 const emailValidator = require('validator')
+require("dotenv").config();
 const transporter = require("../utils/sendMail");
 const otpGenerator = require("otp-generator");
 const bcrypt = require("bcrypt");
@@ -11,236 +12,398 @@ const jwt = require("jsonwebtoken")
 const Vonage = require('@vonage/server-sdk')
 
 const vonage = new Vonage({
-  apiKey: process.env.API_KEY,
-  apiSecret: process.env.API_SECRET
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET
 });
 
-exports.user_signup = async (req, res) => {
+//user will only can sign up when he verifies his otp sent to his mobile number using vonage api
+exports.userSignup = async (req, res) => {
     try {
-        let {
-            firstName,
-            lastName,
-            gender,
-            dateOfBirth,
-            phone,
-            password,
-            address
-        } = req.body;
-        let email = req.body.email;
-        if (!email) {
-            return res.status(400).send({ status: false, msg: " Email is required" })
-        }
-        const isValidEmail = emailValidator.isEmail(email)
-        if (!isValidEmail) {
-            return res.status(400).send({ status: false, msg: " invalid email" })
-        }
-        const dataExist = await userModel.findOne({ email: email });
-        if (dataExist) {
-            return res.status(400).send({ message: "email already in use" });
+        let { firstName, lastName, phone, email, password } = req.body;
+        let user = await userModel.findOne({ phone: phone });
+        if (user) {
+            return res.status(400).json({
+                message: "User already exists",
+            });
         }
         const salt = await bcrypt.genSalt(10);
         password = await bcrypt.hash(password, salt);
 
-        const userRequest = {
-            firstName,
-            lastName,
-            gender,
-            dateOfBirth,
-            phone,
-            email,
-            password,
-            address
-        };
-        const userData = await userModel.create(userRequest);
-        return res
-            .status(201)
-            .send({ message: "User signup successfully", data: userData });
-    } catch (err) {
-        return res.status(500).send(err.message);
+
+        let otp = otpGenerator.generate(6, {
+            //upperCase: false, specialChars: false, alphabets: false
+            upperCaseAlphabets: false,
+            specialChars: false,
+            lowerCaseAlphabets: false,
+        });
+        // const to = phone;
+        // const subject = "OTP for phone Verification";
+        // const text = `Your OTP for phone verification is ${otp}`;
+        // if (phone.length == 10) {
+        //     var toPhone = "91".concat(phone);
+        // }
+        // else {
+        //     var toPhone = phone;
+        // }
+
+        const from = "Vonage APIs"
+        const to = "918013019483"
+        const text = `Your OTP is ${otp}`;
+
+        vonage.message.sendSms(from, to, text, (err, responseData) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (responseData.messages[0]['status'] === "0") {
+                    console.log("Message sent successfully.");
+                } else {
+                    console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+                }
+            }
+        })
+
+        var salt2 = await bcrypt.genSalt(10);
+        otp = await bcrypt.hash(otp, salt2);
+
+
+        const newUser = await userModel.create({
+            firstName, lastName, phone, email, password,
+            mobile_otp: otp
+        });
+
+        res.status(200).json({
+            message: "OTP sent successfully",
+            otp: otp
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            error: error.message
+        });
     }
-};
+}
+
+//resendOtp otp to the user's mobile number
+exports.resendOtp = async (req, res) => {
+    try {
+        let { phone } = req.body;
+        let user = await userModel.findOne({ phone });
+        if (!user) {
+            return res.status(400).json({
+                message: "User does not exists",
+            });
+        }
+        let otp = otpGenerator.generate(6, {
+            //upperCase: false, specialChars: false, alphabets: false
+            upperCaseAlphabets: false,
+            specialChars: false,
+            lowerCaseAlphabets: false,
+        });
+        
+        const from = "Vonage APIs"
+        const to = "918013019483"
+        const text = `Your OTP is ${otp}`;
+
+        vonage.message.sendSms(from, to, text, (err, responseData) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (responseData.messages[0]['status'] === "0") {
+                    console.log("Message sent successfully.");
+                } else {
+                    console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+                }
+            }
+        }
+        )
+
+        var salt = await bcrypt.genSalt(10);
+        otp = await bcrypt.hash(otp, salt);
+
+        user.mobile_otp = otp;
+        await user.save();
+
+        res.status(200).json({
+            message: "OTP sent successfully",
+            otp: otp
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            error: error.message
+        });
+    }
+}
+
+//user login to send the otp to the user's phone number
+exports.login = async (req, res) => {
+    try {
+        let { phone } = req.body;
+        let user = await userModel.findOne({ phone });
+        if (!user) {
+            return res.status(400).json({
+                message: "User does not exist",
+            });
+        }
+        let otp = otpGenerator.generate(6, {
+            upperCaseAlphabets: false,
+            specialChars: false,
+            lowerCaseAlphabets: false,
+        });
+
+        const from = "Vonage APIs"
+        const to = "918013019483"
+        const text = `Your OTP is ${otp}`;
+
+        vonage.message.sendSms(from, to, text, (err, responseData) => {
+            if (err) {
+                console.log(err);
+            } else {
+                if (responseData.messages[0]['status'] === "0") {
+                    console.log("Message sent successfully.");
+                } else {
+                    console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+                }
+            }
+        }
+        )
+        var salt = await bcrypt.genSalt(10);
+        otp = await bcrypt.hash(otp, salt);
+        user.mobile_otp = otp;
+        await user.save();
+        res.status(200).json({
+            message: "OTP sent successfully",
+            otp: otp
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            error: error.message
+        });
+    }
+}
 
 
-// exports.send_otp_toEmail = async (req, res) => {
+
+//when user verify the otp sent at the time of registration then user will be registered
+exports.verifyOtpAndGenerateToken = async (req, res) => {
+    try {
+        const { phone, otp } = req.body;
+        const user = await userModel.findOne({ phone: phone });
+        if (!user) {
+            return res.status(400).json({
+                message: "User does not exist",
+            });
+        }
+        //compare hash otp then login
+        const isMatch = await bcrypt.compare(otp, user.mobile_otp);
+        if (!isMatch) {
+            return res.status(400).json({
+                message: "Invalid OTP",
+            });
+        }
+        //generate token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET_KEY, {
+            expiresIn: "1d",
+        });
+        res.status(200).json({
+            message: "OTP verified successfully",
+            token: token
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Something went wrong",
+            error: error.message
+        });
+    }
+}
+// exports.user_signup = async (req, res) => {
 //     try {
-//         const userMail = req.body.email;
-//         const userData = await userModel.findOne({ email: userMail });
-//         if (!userData) {
-//             return res
-//                 .status(400)
-//                 .send({ setting: { success: "0", message: "not valid user" } });
+//         let {
+//             firstName,
+//             lastName,
+//             gender,
+//             dateOfBirth,
+//             phone,
+//             password,
+//             address
+//         } = req.body;
+//         let email = req.body.email;
+//         if (!email) {
+//             return res.status(400).send({ status: false, msg: " Email is required" })
 //         }
-//         let mail_otp = otpGenerator.generate(4, {
-//             upperCaseAlphabets: false,
-//             specialChars: false,
-//             lowerCaseAlphabets: false,
-//         });
+//         const isValidEmail = emailValidator.isEmail(email)
+//         if (!isValidEmail) {
+//             return res.status(400).send({ status: false, msg: " invalid email" })
+//         }
+//         const dataExist = await userModel.findOne({ email: email });
+//         if (dataExist) {
+//             return res.status(400).send({ message: "email already in use" });
+//         }
+//         const salt = await bcrypt.genSalt(10);
+//         password = await bcrypt.hash(password, salt);
 
-//         console.log(process.env.AUTH_EMAIL, process.env.AUTH_PASS);
-//         await transporter.sendMail({
-//             from: process.env.AUTH_EMAIL,
-//             to: userMail,
-//             subject: "OTP",
-//             text: `Your OTP is ${mail_otp} to login into your account`,
+//         const userRequest = {
+//             firstName,
+//             lastName,
+//             gender,
+//             dateOfBirth,
+//             phone,
+//             email,
+//             password,
+//             address
+//         };
+//         const userData = await userModel.create(userRequest);
+//         return res
+//             .status(201)
+//             .send({ message: "User signup successfully", data: userData });
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     }
+// };
+
+
+// exports.send_otp_toPhone = async (req, res) => {
+//     try {
+//       const userMail = req.body.phone;
+//       const userData = await userModel.findOne({ phone: userMail });
+//       if (!userData) {
+//         return res.status(400).send({ msg: "not valid user" }); 
+//       }
+//       // OTP Generation
+//       let mail_otp = otpGenerator.generate(4, {
+//         upperCaseAlphabets: false,
+//         specialChars: false,
+//         lowerCaseAlphabets: false,
+//       });
+
+//       const to = userMail;
+//       const subject = "OTP for phone Verification";
+//       const text = `Your OTP is ${mail_otp}`;
+
+//         if(userMail.length == 10){
+//           var toPhone = "91".concat(userMail);
+//         }
+//         const fromPhone = "Kuldeep Solutions";
+//         console.log(fromPhone, toPhone, text);
+//         await vonage.message.sendSms(fromPhone, toPhone, text, (err, responseData) => {
+//           if (err) {
+//               console.log(err);
+//           } else {
+//               if(responseData.messages[0]['status'] === "0") {
+//                   console.log("Message sent successfully.");
+//                   // res.send(`Otp Sent To your ${to}` );
+//               } else {
+//                   console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
+//               }
+//           }
 //         });
 
 //         const salt = await bcrypt.genSalt(10);
 //         mail_otp = await bcrypt.hash(mail_otp, salt);
 
 //         await userModel.updateOne(
-//             { email: userMail },
-//             { $set: { mail_otp: mail_otp } }
+//           { phone: userMail },
+//           { $set: { mobile_otp: mail_otp } }
 //         );
 
-//         return res
-//             .status(200)
-//             .send({ setting: { success: "1", message: "otp sent successfully" } });
+//       await userModel.updateOne(
+//         { email: userMail },
+//         { $set: { mail_otp: mail_otp } }
+//       );
+
+//       return res
+//         .status(200)
+//         .send({ setting: { success: "1", message: "otp sent successfully" } });
 //     } catch (err) {
-//         return res.status(500).send(err.message);
+//       return res.status(500).send(err.message);
 //     }
-// };
+//   };
 
-exports.send_otp_toPhone = async (req, res) => {
-    try {
-      const userMail = req.body.phone;
-      const userData = await userModel.findOne({ phone: userMail });
-      if (!userData) {
-        return res.status(400).send({ msg: "not valid user" }); 
-      }
-      // OTP Generation
-      let mail_otp = otpGenerator.generate(4, {
-        upperCaseAlphabets: false,
-        specialChars: false,
-        lowerCaseAlphabets: false,
-      });
-      
-      const to = userMail;
-      const subject = "OTP for phone Verification";
-      const text = `Your OTP is ${mail_otp}`;
-  
-        if(userMail.length == 10){
-          var toPhone = "91".concat(userMail);
-        }
-        const fromPhone = "Kuldeep Solutions";
-        console.log(fromPhone, toPhone, text);
-        await vonage.message.sendSms(fromPhone, toPhone, text, (err, responseData) => {
-          if (err) {
-              console.log(err);
-          } else {
-              if(responseData.messages[0]['status'] === "0") {
-                  console.log("Message sent successfully.");
-                  // res.send(`Otp Sent To your ${to}` );
-              } else {
-                  console.log(`Message failed with error: ${responseData.messages[0]['error-text']}`);
-              }
-          }
-        });
-    
-        const salt = await bcrypt.genSalt(10);
-        mail_otp = await bcrypt.hash(mail_otp, salt);
-  
-        await userModel.updateOne(
-          { phone: userMail },
-          { $set: { mobile_otp: mail_otp } }
-        );
-  
-      await userModel.updateOne(
-        { email: userMail },
-        { $set: { mail_otp: mail_otp } }
-      );
-  
-      return res
-        .status(200)
-        .send({ setting: { success: "1", message: "otp sent successfully" } });
-    } catch (err) {
-      return res.status(500).send(err.message);
-    }
-  };
+// //// exports.login = async (req, res) => {
+// //     try {
+// //         const userEmail = req.body.email;
+// //         const userOtp = req.body.otp;
 
-// exports.login = async (req, res) => {
+// //         const dataExist = await userModel.findOne({ email: userEmail });
+// //         if (!dataExist)
+// //             return res.status(404).send({ message: "user dose not exist" });
+// //         const { _id, firstName, lastName } = dataExist;
+
+// //         const validOtp = await bcrypt.compare(userOtp, dataExist.mail_otp);
+// //         if (!validOtp) return res.status(400).send({ message: "Invalid OTP" });
+// //         const payload = { userId: _id, email: userEmail };
+// //         const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, /*{  expiresIn: "10080m",}*/); //in final code push remove the comment expires in time
+// //         res.header("jwt-token", generatedToken);
+// //         return res
+// //             .status(200)
+// //             .send({
+// //                 message: `${firstName} ${lastName} you are logged in Successfully`,
+// //                 Token: generatedToken,
+// //             });
+// //     } catch (err) {
+// //         return res.status(500).send(err.message);
+// //     }
+// //// };
+
+// exports.login = async (req, res) => {  
 //     try {
-//         const userEmail = req.body.email;
-//         const userOtp = req.body.otp;
+//       const userEmail = req.body.email||req.body.phone;
+//       let userOtp = req.body.otp;
+//       let dataExist;
+//       if(userEmail.includes("@")){
+//          dataExist = await userModel.findOne({ email: userEmail });
+//       }
+//       else{
+//          dataExist = await userModel.findOne({ phone: userEmail });
+//       }
 
-//         const dataExist = await userModel.findOne({ email: userEmail });
-//         if (!dataExist)
-//             return res.status(404).send({ message: "user dose not exist" });
-//         const { _id, firstName, lastName } = dataExist;
+//       console.log(dataExist);
+//       if (!dataExist)
+//         return res.status(404).send({ message: "user dose not exist" });
 
-//         const validOtp = await bcrypt.compare(userOtp, dataExist.mail_otp);
+//       const { _id, firstName, lastName } = dataExist;
+//       //let compareOtp = dataExist.mail_otp||dataExist.mobile_otp
+//       //const validOtp = await bcrypt.compare(userOtp , compareOtp)
+//       const validOtp = await bcrypt.compare(userOtp, dataExist.mail_otp || dataExist.mobile_otp);
 //         if (!validOtp) return res.status(400).send({ message: "Invalid OTP" });
-//         const payload = { userId: _id, email: userEmail };
-//         const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, /*{  expiresIn: "10080m",}*/); //in final code push remove the comment expires in time
-//         res.header("jwt-token", generatedToken);
-//         return res
-//             .status(200)
-//             .send({
-//                 message: `${firstName} ${lastName} you are logged in Successfully`,
-//                 Token: generatedToken,
-//             });
+//     //   .then((err)=>{
+//     //     if(err) throw err;
+//     //   }).catch(()=> console.log("OTP Matched"));
+//       const payload = { userId: _id, email: userEmail,phone: userEmail };
+//       const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
+//         expiresIn: "10080m",
+//       });
+//       //res.header("jwt-token", generatedToken);
+//       return res
+//         .status(200)
+//         .send({
+//           message: `${firstName} ${lastName} you are logged in Successfully`,
+//           Token: generatedToken,
+//         });
 //     } catch (err) {
-//         return res.status(500).send(err.message);
+//       return res.status(500).send(err.message);
 //     }
-// };
+//   };
 
-exports.login = async (req, res) => {  
-    try {
-      const userEmail = req.body.email||req.body.phone;
-      let userOtp = req.body.otp;
-      let dataExist;
-      if(userEmail.includes("@")){
-         dataExist = await userModel.findOne({ email: userEmail });
-      }
-      else{
-         dataExist = await userModel.findOne({ phone: userEmail });
-      }
-        
-      console.log(dataExist);
-      if (!dataExist)
-        return res.status(404).send({ message: "user dose not exist" });
-  
-      const { _id, firstName, lastName } = dataExist;
-      //let compareOtp = dataExist.mail_otp||dataExist.mobile_otp
-      //const validOtp = await bcrypt.compare(userOtp , compareOtp)
-      const validOtp = await bcrypt.compare(userOtp, dataExist.mail_otp || dataExist.mobile_otp);
-        if (!validOtp) return res.status(400).send({ message: "Invalid OTP" });
-    //   .then((err)=>{
-    //     if(err) throw err;
-    //   }).catch(()=> console.log("OTP Matched"));
-      const payload = { userId: _id, email: userEmail,phone: userEmail };
-      const generatedToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {
-        expiresIn: "10080m",
-      });
-      //res.header("jwt-token", generatedToken);
-      return res
-        .status(200)
-        .send({
-          message: `${firstName} ${lastName} you are logged in Successfully`,
-          Token: generatedToken,
-        });
-    } catch (err) {
-      return res.status(500).send(err.message);
-    }
-  };
-
-// exports.logout = async (req, res) => {
-// try{
-//   req.session = null;
-//   res.redirect(200, '/user/login');
-// }
-// catch (err) {
-//     return res.status(500).send(err.message);
-// }
-// }
+// // exports.logout = async (req, res) => {
+// // try{
+// //   req.session = null;
+// //   res.redirect(200, '/user/login');
+// // }
+// // catch (err) {
+// //     return res.status(500).send(err.message);
+// // }
+// // }
 
 exports.logout = async (req, res) => {
     try {
-      res.clearCookie("jwt");
-      res.status(200).send("User Logout");
+        res.clearCookie("jwt");
+        res.status(200).send("User Logout");
     } catch (err) {
-      return res.status(500).send(err.message);
+        return res.status(500).send(err.message);
     }
-  }
+}
 
 exports.forgotPassword = async (req, res) => {
     try {
@@ -389,7 +552,7 @@ exports.deleteUser = async (req, res) => {
         const checkUser = await userModel.find({ _id: userId, isDeleted: false });
         if (checkUser) {
             const user = await userModel.updateOne({ _id: userId, isDeleted: false }, { $set: { isDeleted: true, deletedAt: Date.now() } }, { new: true });
-           return res.status(200).send({ msg: "deleted successfully", data: user });
+            return res.status(200).send({ msg: "deleted successfully", data: user });
         } else {
             return res.status(400).send({ error: 'user not found' });
         }
@@ -435,7 +598,7 @@ exports.getOwnProfile = async (req, res) => {
 //                 },
 //                 //if the user want to see weekly data then fetch the data creates after 12:00 am on any monday of the week and every new week of monday dont show the last week data
 //                 createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date(new Date().setHours(0, 0, 0)).getDate() - new Date(new Date().setHours(0, 0, 0)).getDay() + 1) }
-                
+
 //             });
 //             return res.status(200).send({ message: "prediction details", data: prediction });
 //             }
@@ -465,7 +628,7 @@ exports.getOwnProfile = async (req, res) => {
 //                     });
 //                     return res.status(200).send({ message: "prediction details", data: prediction });
 //                     }
-             
+
 //     } catch (err) {
 //         return res.status(500).send(err.message);
 //     }
@@ -517,7 +680,7 @@ exports.getPredictionByCardTypeAndPredictionTypeWeekly = async (req, res) => {
             {
                 $elemMatch: { predictionType: predictionTypeAndDescription }
             },
-           //the user can see the weekly data that created on monday and valid upto sunday midnight, then after again astrologer have to create another weekly data
+            //the user can see the weekly data that created on monday and valid upto sunday midnight, then after again astrologer have to create another weekly data
             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date().getDate() - new Date().getDay() + 1) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
@@ -553,7 +716,7 @@ exports.getPredictionByCardTypeAndPredictionTypeYearly = async (req, res) => {
             {
                 $elemMatch: { predictionType: predictionTypeAndDescription }
             },
-          // the user can see the yearly data that created on 1st january and valid upto 31st december, then after again astrologer have to create another yearly data
+            // the user can see the yearly data that created on 1st january and valid upto 31st december, then after again astrologer have to create another yearly data
             createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) }
         });
         return res.status(200).send({ message: "prediction details", data: prediction });
@@ -569,8 +732,8 @@ exports.cancelMeeting = async (req, res) => {
     try {
         const user = req.user.userId
         const { meetingId } = req.body;
-        const meeting = await sheduleChatModel.findOneAndUpdate({ _id: meetingId, user:user }, { cancelMeeting: true });
-        return res.status(200).send({ message: "meeting cancelled successfully", data : meeting });
+        const meeting = await sheduleChatModel.findOneAndUpdate({ _id: meetingId, user: user }, { cancelMeeting: true });
+        return res.status(200).send({ message: "meeting cancelled successfully", data: meeting });
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -601,8 +764,8 @@ exports.giveRating = async (req, res) => {
     try {
         const user = req.user.userId
         const { meetingId, rating } = req.body;
-        const meeting = await sheduleChatModel.findOneAndUpdate({ _id: meetingId, user:user }, { rating: rating });
-        return res.status(200).send({ message: "rating given successfully", data : meeting });
+        const meeting = await sheduleChatModel.findOneAndUpdate({ _id: meetingId, user: user }, { rating: rating });
+        return res.status(200).send({ message: "rating given successfully", data: meeting });
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -611,19 +774,19 @@ exports.giveRating = async (req, res) => {
 //average rating of jyotish
 exports.updateRating = async (req, res) => {
     try {
-        const jyotish = await jyotisModel.find({_id: req.body.jyotishId});
+        const jyotish = await jyotisModel.find({ _id: req.body.jyotishId });
         // for (let i = 0; i < jyotish.length; i++) {
         //     const jyotishId = jyotish[i]._id;
         //     const jyotishName = jyotish[i].jyotishName;
-            const sheduleChat = await sheduleChatModel.find({ jyotish: jyotish, rating: { $ne: null } });
-            let totalRating = 0;
-            for (let j = 0; j < sheduleChat.length; j++) {
-                totalRating = totalRating + sheduleChat[j].rating;
-            }
-            const averageRating = totalRating / sheduleChat.length;
-            const jyotishUpdate = await jyotisModel.findOneAndUpdate({ _id: req.body.jyotishId }, { rating: averageRating });
+        const sheduleChat = await sheduleChatModel.find({ jyotish: jyotish, rating: { $ne: null } });
+        let totalRating = 0;
+        for (let j = 0; j < sheduleChat.length; j++) {
+            totalRating = totalRating + sheduleChat[j].rating;
+        }
+        const averageRating = totalRating / sheduleChat.length;
+        const jyotishUpdate = await jyotisModel.findOneAndUpdate({ _id: req.body.jyotishId }, { rating: averageRating });
         //}
-        return res.status(200).send({ message: "rating updated successfully", data : jyotish });
+        return res.status(200).send({ message: "rating updated successfully", data: jyotish });
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -632,8 +795,8 @@ exports.updateRating = async (req, res) => {
 //get updated rating of jyotish
 exports.getRating = async (req, res) => {
     try {
-        const jyotish = await jyotisModel.find({_id: req.body.jyotishId, isDeleted: false}).select({rating:1});
-        return res.status(200).send({ message: "rating of jyotish", data : jyotish });
+        const jyotish = await jyotisModel.find({ _id: req.body.jyotishId, isDeleted: false }).select({ rating: 1 });
+        return res.status(200).send({ message: "rating of jyotish", data: jyotish });
     } catch (err) {
         return res.status(500).send(err.message);
     }
@@ -643,17 +806,17 @@ exports.getRating = async (req, res) => {
 //from horoscope model
 //user will see today's horoscope , which is created by astrologer on the same day
 exports.getHoroscopeByTypeToday = async (req, res) => {
-        try {
-            const { zodiacName, horoscopeType } = req.body;
-            const horoscope = await horoscopeModel.find({
-                zodiacName: zodiacName, horoscopeType: horoscopeType,
-                createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
-            });
-            return res.status(200).send({ message: "horoscope details", data: horoscope });
-        } catch (err) {
-            return res.status(500).send(err.message);
-        }
+    try {
+        const { zodiacName, horoscopeType } = req.body;
+        const horoscope = await horoscopeModel.find({
+            zodiacName: zodiacName, horoscopeType: horoscopeType,
+            createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)) }
+        });
+        return res.status(200).send({ message: "horoscope details", data: horoscope });
+    } catch (err) {
+        return res.status(500).send(err.message);
     }
+}
 
 //user will see weekly horoscope , which is created by astrologer on the same day   
 exports.getHoroscopeByTypeTomorrow = async (req, res) => {
@@ -671,12 +834,12 @@ exports.getHoroscopeByTypeTomorrow = async (req, res) => {
 }
 
 //the user can see the weekly data that created on monday and valid upto sunday midnight, then after again astrologer have to create another weekly data
-          
+
 exports.getHoroscopeByTypeWeekly = async (req, res) => {
     try {
         const { zodiacName, horoscopeType } = req.body;
         const horoscope = await horoscopeModel.find({
-            zodiacName: zodiacName, horoscopeType: horoscopeType,   
+            zodiacName: zodiacName, horoscopeType: horoscopeType,
             createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setDate(new Date().getDate() - new Date().getDay() + 1) }
         });
         return res.status(200).send({ message: "horoscope details", data: horoscope });
@@ -705,7 +868,7 @@ exports.getHoroscopeByTypeYearly = async (req, res) => {
         const { zodiacName, horoscopeType } = req.body;
         const horoscope = await horoscopeModel.find({
             zodiacName: zodiacName, horoscopeType: horoscopeType,
-             //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
+            //createdAt: { $gte: new Date(new Date().setHours(0, 0, 0)).setMonth(0)}
             createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) }
         });
         return res.status(200).send({ message: "horoscope details", data: horoscope });
@@ -714,3 +877,43 @@ exports.getHoroscopeByTypeYearly = async (req, res) => {
     }
 }
 
+
+
+// exports.send_otp_toEmail = async (req, res) => {
+//     try {
+//         const userMail = req.body.email;
+//         const userData = await userModel.findOne({ email: userMail });
+//         if (!userData) {
+//             return res
+//                 .status(400)
+//                 .send({ setting: { success: "0", message: "not valid user" } });
+//         }
+//         let mail_otp = otpGenerator.generate(4, {
+//             upperCaseAlphabets: false,
+//             specialChars: false,
+//             lowerCaseAlphabets: false,
+//         });
+
+//         console.log(process.env.AUTH_EMAIL, process.env.AUTH_PASS);
+//         await transporter.sendMail({
+//             from: process.env.AUTH_EMAIL,
+//             to: userMail,
+//             subject: "OTP",
+//             text: `Your OTP is ${mail_otp} to login into your account`,
+//         });
+
+//         const salt = await bcrypt.genSalt(10);
+//         mail_otp = await bcrypt.hash(mail_otp, salt);
+
+//         await userModel.updateOne(
+//             { email: userMail },
+//             { $set: { mail_otp: mail_otp } }
+//         );
+
+//         return res
+//             .status(200)
+//             .send({ setting: { success: "1", message: "otp sent successfully" } });
+//     } catch (err) {
+//         return res.status(500).send(err.message);
+//     }
+// };

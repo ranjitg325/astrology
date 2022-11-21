@@ -3,8 +3,12 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const middleware = require("../middleware/authenticateUser");
 
-router.post('/userCreate', userController.user_signup);
-router.post('/email_otp',userController.send_otp_toPhone);
+router.post('/userCreate', userController.userSignup);
+//resend otp
+router.post('/resendOtp', userController.resendOtp);
+//verify otp
+router.post('/verifyOtp', userController.verifyOtpAndGenerateToken);
+//router.post('/email_otp',userController.send_otp_toPhone);
 router.post('/login',userController.login);
 router.post('/logout', middleware.authenticateToken, userController.logout);
 router.post('/forgotPassword', userController.forgotPassword); 

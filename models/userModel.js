@@ -3,22 +3,22 @@ const mongoose = require('mongoose')
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
-        required: true,
+        //required: true,
         trim: true,
     },
     lastName: {
         type: String,
-        required: true,
+        //required: true,
         trim: true,
     },
     gender: { 
         type: String, 
-        required:true,
+        //required:true,
         enum: ["male", "female", "other"] 
     },
     dateOfBirth: {
         type: Date,
-        required: true
+        //required: true
     },
     phone: {
         type: String,
@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
 
     email: {
         type: String,
-        required: true,
+        //required: true,
         unique : true,
         trim: true
     },
