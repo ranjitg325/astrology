@@ -19,7 +19,7 @@ const vonage = new Vonage({
 //user will only can sign up when he verifies his otp sent to his mobile number using vonage api
 exports.userSignup = async (req, res) => {
     try {
-        let { firstName, lastName, phone, email, password } = req.body;
+        let { firstName, lastName,gender,dateOfBirth, phone, email, password,address } = req.body;
         let user = await userModel.findOne({ phone: phone });
         if (user) {
             return res.status(400).json({
@@ -65,9 +65,9 @@ exports.userSignup = async (req, res) => {
         var salt2 = await bcrypt.genSalt(10);
         otp = await bcrypt.hash(otp, salt2);
 
-
+t
         const newUser = await userModel.create({
-            firstName, lastName, phone, email, password,
+            firstName, lastName,gender,dateOfBirth, phone, email, password,address,
             mobile_otp: otp
         });
 

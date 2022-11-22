@@ -44,7 +44,9 @@ const userSchema = new mongoose.Schema({
     address: {
         street: { type: String ,trim: true},
         city: { type: String, trim: true },
-        pincode: { type: String }
+        pincode: { type: String },
+        country: { type: String, trim: true },
+        state: { type: String, trim: true },
     },
     mail_otp:{         //when a user login after registration, he will be asked to verify his email address
         type:String,
