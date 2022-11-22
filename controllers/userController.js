@@ -65,7 +65,6 @@ exports.userSignup = async (req, res) => {
         var salt2 = await bcrypt.genSalt(10);
         otp = await bcrypt.hash(otp, salt2);
 
-t
         const newUser = await userModel.create({
             firstName, lastName,gender,dateOfBirth, phone, email, password,address,
             mobile_otp: otp
